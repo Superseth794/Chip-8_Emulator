@@ -1,0 +1,6 @@
+# ignores XCode files
+*.xcodeproj
+*.xcodeproj/*
+
+# ignores exec files
+
