@@ -12,7 +12,7 @@
 int main(int argc, const char * argv[]) {
     
     chp::Chip8 emulator;
-    emulator.launch(1800, 1200);
+    emulator.launch(1200, 1400);
     
     return 0;
 }

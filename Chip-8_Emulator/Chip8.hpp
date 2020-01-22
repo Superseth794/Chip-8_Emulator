@@ -34,6 +34,8 @@ private:
     
 private:
     
+    static constexpr int WIDTH = 64;
+    static constexpr int HEIGHT = 32;
     float pixelWidth = 0;
     float pixelHeight = 0;
     
@@ -41,7 +43,7 @@ private:
     std::array<std::uint8_t, 16> m_registers;
     std::array<std::uint16_t, 16> m_stack;
     
-    std::array<bool, 2048> m_pixels;
+    std::array<bool, WIDTH * HEIGHT> m_pixels;
     
     std::uint16_t m_programCounter;
     std::uint8_t m_stackLevel;

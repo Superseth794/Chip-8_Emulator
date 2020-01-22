@@ -12,10 +12,10 @@ namespace chp {
 void Chip8::launch(unsigned int width, unsigned int height) {
     init();
     
-    pixelWidth = width / 64.f;
-    pixelHeight = height / 32.f;
+    pixelWidth = static_cast<float>(width) / WIDTH;
+    pixelHeight = static_cast<float>(height) / HEIGHT;
     
-    sf::RenderWindow gameWindow(sf::VideoMode(pixelWidth * 64, pixelHeight * 32), "Chip-8");
+    sf::RenderWindow gameWindow(sf::VideoMode(pixelWidth * WIDTH, pixelHeight * HEIGHT), "Chip-8");
     
     while (gameWindow.isOpen()) {
         sf::Event event;
@@ -62,15 +62,20 @@ void Chip8::update() {
 }
 
 std::unique_ptr<sf::RenderTexture> Chip8::display() {
-    auto texture {std::make_unique<sf::RenderTexture>()};
-    texture->create(64 * pixelWidth, 32 * pixelHeight);
     
-    for (int y = 0; y < 64; ++y) {
-        for (int x = 0; x < 64; ++x) {
+    const int textureWidth = WIDTH * pixelWidth;
+    const int textureHeight = HEIGHT * pixelHeight;
+    
+    auto texture {std::make_unique<sf::RenderTexture>()};
+    texture->create(textureWidth, textureHeight);
+    
+    for (int y = 0; y < HEIGHT; ++y) {
+        for (int x = 0; x < WIDTH; ++x) {
             sf::RectangleShape pixel;
             pixel.setSize({pixelWidth, pixelHeight});
-            pixel.setFillColor(m_pixels[y * 64 + x] ? sf::Color::White : sf::Color::Black);
-            pixel.setPosition(x * pixelWidth, y * pixelHeight);
+//            pixel.setFillColor(m_pixels[y * HEIGHT + x] ? sf::Color::White : sf::Color::Black);
+            pixel.setFillColor((x + y) % 2 == 0 ? sf::Color::White : sf::Color::Black);
+            pixel.setPosition(x * pixelWidth, textureHeight - (y + 1) * pixelHeight);
             texture->draw(pixel);
         }
     }
