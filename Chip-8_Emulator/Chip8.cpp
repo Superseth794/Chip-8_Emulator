@@ -109,7 +109,10 @@ void Chip8::update() {
     if (m_soundCounter > 0)
         m_soundCounter--;
     
-    auto opcode {getCurrentOpcode()};
+    auto const opcode {getCurrentOpcode()};
+    auto const actionId {getActionFromOpcode(opcode)};
+    computeAction(actionId, opcode);
+    m_programCounter += 2;
 }
 
 std::unique_ptr<sf::RenderTexture> Chip8::display() {
@@ -134,10 +137,6 @@ std::unique_ptr<sf::RenderTexture> Chip8::display() {
     return texture;
 }
 
-void Chip8::clearScreen() {
-    m_pixels.fill(false);
-}
-
 std::uint16_t Chip8::getCurrentOpcode() {
     return ((m_memory[m_programCounter] << 8) + m_memory[m_programCounter + 1]);
 }
@@ -151,14 +150,185 @@ std::uint8_t Chip8::getActionFromOpcode(std::uint16_t opcode) {
     return 0;
 }
 
-void Chip8::computeAction(std::uint8_t actionId) {
-    switch (actionId) { // TODO
-        case <#constant#>:
-            <#statements#>
-            break;
+void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
+    
+    std::uint8_t b3,b2,b1;
+    
+    b3 = (opcode&(0x0F00)) >> 8;
+    b2 = (opcode&(0x00F0)) >> 4;
+    b1 = (opcode&(0x000F));
+    
+    switch (actionId) {
+        case 0:
             
-        default:
             break;
+        
+        case 1:
+            clearScreen();
+            break;
+        
+        case 2:
+            
+            break;
+        
+        case 3:
+            
+            break;
+        
+        case 4:
+            
+            break;
+        
+        case 5:
+            
+            break;
+        
+        case 6:
+            
+            break;
+        
+        case 7:
+            
+            break;
+        
+        case 8:
+            
+            break;
+        
+        case 9:
+            
+            break;
+        
+        case 10:
+            
+            break;
+        
+        case 11:
+            
+            break;
+        
+        case 12:
+            
+            break;
+        
+        case 13:
+            
+            break;
+        
+        case 14:
+            
+            break;
+        
+        case 15:
+            
+            break;
+        
+        case 16:
+            
+            break;
+        
+        case 17:
+            
+            break;
+        
+        case 18:
+            
+            break;
+        
+        case 19:
+            
+            break;
+        
+        case 20:
+            
+            break;
+        
+        case 21:
+            
+            break;
+        
+        case 22:
+            
+            break;
+        
+        case 23:
+            drawSprite(b1, b2, b3);
+            break;
+        
+        case 24:
+            
+            break;
+        
+        case 25:
+            
+            break;
+        
+        case 26:
+            
+            break;
+        
+        case 27:
+            
+            break;
+        
+        case 28:
+            
+            break;
+        
+        case 29:
+            
+            break;
+        
+        case 30:
+            
+            break;
+        
+        case 31:
+            
+            break;
+        
+        case 32:
+            
+            break;
+        
+        case 33:
+            
+            break;
+        
+        case 34:
+            
+            break;
+        
+        case 35:
+        
+        break;
+        
+        default:
+            throw std::runtime_error("Action id " + std::to_string(actionId) + " could not be recognised neither handled");
+            break;
+    }
+}
+
+void Chip8::clearScreen() {
+    m_pixels.fill(false);
+}
+
+void Chip8::drawSprite(std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+    m_registers[0xF] = 0;
+    
+    for (int dY = 0; dY < b1; ++dY) {
+        const std::uint8_t rowDescription = m_memory[m_registerAdress + dY];
+        const int y = (m_registers[b2] + dY) % HEIGHT;
+        for (int bitId = 0; bitId < 8; ++bitId) {
+            bool pixelOn = rowDescription & (0x1 << (7 - bitId));
+            if (!pixelOn)
+                continue;
+            const int x = (m_registers[b3] + bitId) % WIDTH;
+            if (m_pixels[y * WIDTH + x]) {
+                m_registers[0xF] = 1;
+            }
+            m_pixels[y * WIDTH + x] = !m_pixels[y * WIDTH + x];
+        }
     }
 }
 

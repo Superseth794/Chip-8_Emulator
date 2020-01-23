@@ -11,7 +11,10 @@
 # include <iostream>
 # include <array>
 # include <memory>
+
 # include <SFML/Graphics.hpp>
+
+# include "ExternalLibrairies/TSL/hopscotch_map.h"
 
 namespace chp {
 
@@ -31,11 +34,12 @@ private:
     void update();
     std::unique_ptr<sf::RenderTexture> display();
     
-    void clearScreen();
-    
     std::uint16_t getCurrentOpcode();
     std::uint8_t getActionFromOpcode(std::uint16_t opcode);
-    void computeAction(std::uint8_t actionId);
+    void computeAction(std::uint8_t actionId, std::uint16_t opcode);
+    
+    void clearScreen();
+    void drawSprite(std::uint8_t b1, std::uint8_t b2, std::uint8_t b3);
     
 private:
     
