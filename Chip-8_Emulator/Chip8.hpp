@@ -13,6 +13,10 @@
 # include <array>
 # include <memory>
 # include <fstream>
+# include <limits>
+
+# include <stdlib.h>
+# include <time.h>
 
 # include <SFML/Graphics.hpp>
 
@@ -33,6 +37,7 @@ public:
     
 private:
     void init();
+    void loadFont();
     bool loadFile(std::string fileName);
     
     void update();
