@@ -9,8 +9,10 @@
 #define Chip8_hpp
 
 # include <iostream>
+# include <string>
 # include <array>
 # include <memory>
+# include <fstream>
 
 # include <SFML/Graphics.hpp>
 
@@ -27,10 +29,12 @@ public:
     Chip8(Chip8 const& other) = delete;
     Chip8 operator=(Chip8 const& other) = delete;
     
-    void launch(unsigned int width, unsigned int height);
+    void launch(unsigned int width, unsigned int height, std::string fileName);
     
 private:
     void init();
+    bool loadFile(std::string fileName);
+    
     void update();
     std::unique_ptr<sf::RenderTexture> display();
     
@@ -43,6 +47,9 @@ private:
     
 private:
     
+    static constexpr std::size_t MEMORY_SIZE = 4096;
+    static constexpr std::size_t MEMORY_BEGIN = 512;
+    
     static constexpr int WIDTH = 64;
     static constexpr int HEIGHT = 32;
     float m_pixelWidth = 0;
@@ -51,7 +58,7 @@ private:
     int m_fps = 60;
     int m_frequency = 250; // Hz
     
-    std::array<std::uint8_t, 4096> m_memory;
+    std::array<std::uint8_t, MEMORY_SIZE> m_memory;
     std::array<std::uint8_t, 16> m_registers;
     std::array<std::uint16_t, 16> m_stack;
     

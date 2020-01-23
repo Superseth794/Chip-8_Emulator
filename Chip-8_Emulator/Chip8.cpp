@@ -9,8 +9,13 @@
 
 namespace chp {
 
-void Chip8::launch(unsigned int width, unsigned int height) {
+void Chip8::launch(unsigned int width, unsigned int height, std::string fileName) {
     init();
+    
+    if (!loadFile(fileName)) {
+        throw std::runtime_error("Error: could not load file " + fileName);
+        return;
+    }
     
     m_pixelWidth = static_cast<float>(width) / WIDTH;
     m_pixelHeight = static_cast<float>(height) / HEIGHT;
@@ -34,13 +39,15 @@ void Chip8::launch(unsigned int width, unsigned int height) {
             
         }
         
-        if (executionTimer.getElapsedTime().asSeconds() >= 1.f / m_frequency) {
+        if (1.f / executionTimer.getElapsedTime().asSeconds() <= m_frequency) {
             clearScreen();
             update();
+            
+            std::cout << "fps: " << 1.f / executionTimer.getElapsedTime().asSeconds() << std::endl;
             executionTimer.restart();
         }
         
-        if (displayTimer.getElapsedTime().asSeconds() >= 1.f / m_fps) {
+        if (1.f / displayTimer.getElapsedTime().asSeconds() <= m_fps) {
             gameWindow.clear(sf::Color::Black);
             
             auto texture {display()};
@@ -50,6 +57,7 @@ void Chip8::launch(unsigned int width, unsigned int height) {
             
             gameWindow.display();
             
+            std::cout << "ips: " << 1.f / displayTimer.getElapsedTime().asSeconds() << std::endl;
             displayTimer.restart();
         }
     }
@@ -59,7 +67,7 @@ void Chip8::init() {
     m_memory.fill(0);
     m_registers.fill(0);
     
-    m_programCounter = 512;
+    m_programCounter = MEMORY_BEGIN;
     m_stackLevel = 0;
     m_gameCounter = 0;
     m_soundCounter = 0;
@@ -100,6 +108,28 @@ void Chip8::init() {
     m_opcodeIdentifiers[32].identifier = 0xF0FF; m_opcodeIdentifiers[32].mask = 0xF033;
     m_opcodeIdentifiers[33].identifier = 0xF0FF; m_opcodeIdentifiers[33].mask = 0xF055;
     m_opcodeIdentifiers[34].identifier = 0xF0FF; m_opcodeIdentifiers[34].mask = 0xF065;
+}
+
+bool Chip8::loadFile(std::string fileName) {
+    std::ifstream sourceFile;
+    sourceFile.open(fileName, std::ifstream::in);
+    
+    std::uint8_t valueRead;
+    std::uint8_t bytesRead = 0;
+    
+    while (sourceFile.is_open() && !sourceFile.eof() && bytesRead < static_cast<std::uint8_t>(MEMORY_SIZE - MEMORY_BEGIN)) {
+        valueRead = sourceFile.get();
+        m_memory[MEMORY_BEGIN + bytesRead++] = valueRead;
+    }
+    
+    if (!sourceFile.is_open()) {
+        std::cout << "Error: " << strerror(errno) << std::endl;
+        return false;
+    }
+    
+    sourceFile.close();
+    
+    return true;
 }
 
 void Chip8::update() {
