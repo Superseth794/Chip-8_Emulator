@@ -8,6 +8,7 @@
 #ifndef Chip8_hpp
 #define Chip8_hpp
 
+# include <iostream>
 # include <array>
 # include <memory>
 # include <SFML/Graphics.hpp>
@@ -32,12 +33,19 @@ private:
     
     void clearScreen();
     
+    std::uint16_t getCurrentOpcode();
+    std::uint8_t getActionFromOpcode(std::uint16_t opcode);
+    void computeAction(std::uint8_t actionId);
+    
 private:
     
     static constexpr int WIDTH = 64;
     static constexpr int HEIGHT = 32;
-    float pixelWidth = 0;
-    float pixelHeight = 0;
+    float m_pixelWidth = 0;
+    float m_pixelHeight = 0;
+    
+    int m_fps = 60;
+    int m_frequency = 250; // Hz
     
     std::array<std::uint8_t, 4096> m_memory;
     std::array<std::uint8_t, 16> m_registers;
@@ -51,6 +59,12 @@ private:
     
     std::uint8_t m_gameCounter;
     std::uint8_t m_soundCounter;
+    
+    struct OpcodeIdentifier {
+        std::uint16_t mask;
+        std::uint16_t identifier;
+    };
+    std::array<OpcodeIdentifier, 35> m_opcodeIdentifiers;
     
 };
 

@@ -12,10 +12,16 @@ namespace chp {
 void Chip8::launch(unsigned int width, unsigned int height) {
     init();
     
-    pixelWidth = static_cast<float>(width) / WIDTH;
-    pixelHeight = static_cast<float>(height) / HEIGHT;
+    m_pixelWidth = static_cast<float>(width) / WIDTH;
+    m_pixelHeight = static_cast<float>(height) / HEIGHT;
     
-    sf::RenderWindow gameWindow(sf::VideoMode(pixelWidth * WIDTH, pixelHeight * HEIGHT), "Chip-8");
+    sf::RenderWindow gameWindow(sf::VideoMode(m_pixelWidth * WIDTH, m_pixelHeight * HEIGHT), "Chip-8");
+    
+    sf::Clock executionTimer;
+    executionTimer.restart();
+    
+    sf::Clock displayTimer;
+    displayTimer.restart();
     
     while (gameWindow.isOpen()) {
         sf::Event event;
@@ -28,17 +34,24 @@ void Chip8::launch(unsigned int width, unsigned int height) {
             
         }
         
-        gameWindow.clear(sf::Color::Black);
+        if (executionTimer.getElapsedTime().asSeconds() >= 1.f / m_frequency) {
+            clearScreen();
+            update();
+            executionTimer.restart();
+        }
         
-        clearScreen();
-        update();
-        
-        auto texture {display()};
-        sf::Sprite sprite;
-        sprite.setTexture(texture->getTexture());
-        gameWindow.draw(sprite);
-        
-        gameWindow.display();
+        if (displayTimer.getElapsedTime().asSeconds() >= 1.f / m_fps) {
+            gameWindow.clear(sf::Color::Black);
+            
+            auto texture {display()};
+            sf::Sprite sprite;
+            sprite.setTexture(texture->getTexture());
+            gameWindow.draw(sprite);
+            
+            gameWindow.display();
+            
+            displayTimer.restart();
+        }
     }
 }
 
@@ -51,6 +64,42 @@ void Chip8::init() {
     m_gameCounter = 0;
     m_soundCounter = 0;
     m_registerAdress = 0;
+    
+    m_opcodeIdentifiers[0].identifier = 0x0000; m_opcodeIdentifiers[0].mask = 0x0FFF;
+    m_opcodeIdentifiers[1].identifier = 0xFFFF; m_opcodeIdentifiers[1].mask = 0x00E0;
+    m_opcodeIdentifiers[2].identifier = 0xFFFF; m_opcodeIdentifiers[2].mask = 0x00EE;
+    m_opcodeIdentifiers[3].identifier = 0xF000; m_opcodeIdentifiers[3].mask = 0x1000;
+    m_opcodeIdentifiers[4].identifier = 0xF000; m_opcodeIdentifiers[4].mask = 0x2000;
+    m_opcodeIdentifiers[5].identifier = 0xF000; m_opcodeIdentifiers[5].mask = 0x3000;
+    m_opcodeIdentifiers[6].identifier = 0xF000; m_opcodeIdentifiers[6].mask = 0x4000;
+    m_opcodeIdentifiers[7].identifier = 0xF00F; m_opcodeIdentifiers[7].mask = 0x5000;
+    m_opcodeIdentifiers[8].identifier = 0xF000; m_opcodeIdentifiers[8].mask = 0x6000;
+    m_opcodeIdentifiers[9].identifier = 0xF000; m_opcodeIdentifiers[9].mask = 0x7000;
+    m_opcodeIdentifiers[10].identifier = 0xF00F; m_opcodeIdentifiers[10].mask = 0x8000;
+    m_opcodeIdentifiers[11].identifier = 0xF00F; m_opcodeIdentifiers[11].mask = 0x8001;
+    m_opcodeIdentifiers[12].identifier = 0xF00F; m_opcodeIdentifiers[12].mask = 0x8002;
+    m_opcodeIdentifiers[13].identifier = 0xF00F; m_opcodeIdentifiers[13].mask = 0x8003;
+    m_opcodeIdentifiers[14].identifier = 0xF00F; m_opcodeIdentifiers[14].mask = 0x8004;
+    m_opcodeIdentifiers[15].identifier = 0xF00F; m_opcodeIdentifiers[15].mask = 0x8005;
+    m_opcodeIdentifiers[16].identifier = 0xF00F; m_opcodeIdentifiers[16].mask = 0x8006;
+    m_opcodeIdentifiers[17].identifier = 0xF00F; m_opcodeIdentifiers[17].mask = 0x8007;
+    m_opcodeIdentifiers[18].identifier = 0xF00F; m_opcodeIdentifiers[18].mask = 0x800E;
+    m_opcodeIdentifiers[19].identifier = 0xF00F; m_opcodeIdentifiers[19].mask = 0x9000;
+    m_opcodeIdentifiers[20].identifier = 0xF000; m_opcodeIdentifiers[20].mask = 0xA000;
+    m_opcodeIdentifiers[21].identifier = 0xF000; m_opcodeIdentifiers[21].mask = 0xB000;
+    m_opcodeIdentifiers[22].identifier = 0xF000; m_opcodeIdentifiers[22].mask = 0xC000;
+    m_opcodeIdentifiers[23].identifier = 0xF000; m_opcodeIdentifiers[23].mask = 0xD000;
+    m_opcodeIdentifiers[24].identifier = 0xF0FF; m_opcodeIdentifiers[24].mask = 0xE09E;
+    m_opcodeIdentifiers[25].identifier = 0xF0FF; m_opcodeIdentifiers[25].mask = 0xE0A1;
+    m_opcodeIdentifiers[26].identifier = 0xF0FF; m_opcodeIdentifiers[26].mask = 0xF007;
+    m_opcodeIdentifiers[27].identifier = 0xF0FF; m_opcodeIdentifiers[27].mask = 0xF00A;
+    m_opcodeIdentifiers[28].identifier = 0xF0FF; m_opcodeIdentifiers[28].mask = 0xF015;
+    m_opcodeIdentifiers[29].identifier = 0xF0FF; m_opcodeIdentifiers[29].mask = 0xF018;
+    m_opcodeIdentifiers[30].identifier = 0xF0FF; m_opcodeIdentifiers[30].mask = 0xF01E;
+    m_opcodeIdentifiers[31].identifier = 0xF0FF; m_opcodeIdentifiers[31].mask = 0xF029;
+    m_opcodeIdentifiers[32].identifier = 0xF0FF; m_opcodeIdentifiers[32].mask = 0xF033;
+    m_opcodeIdentifiers[33].identifier = 0xF0FF; m_opcodeIdentifiers[33].mask = 0xF055;
+    m_opcodeIdentifiers[34].identifier = 0xF0FF; m_opcodeIdentifiers[34].mask = 0xF065;
 }
 
 void Chip8::update() {
@@ -59,12 +108,14 @@ void Chip8::update() {
     
     if (m_soundCounter > 0)
         m_soundCounter--;
+    
+    auto opcode {getCurrentOpcode()};
 }
 
 std::unique_ptr<sf::RenderTexture> Chip8::display() {
     
-    const int textureWidth = WIDTH * pixelWidth;
-    const int textureHeight = HEIGHT * pixelHeight;
+    const int textureWidth = WIDTH * m_pixelWidth;
+    const int textureHeight = HEIGHT * m_pixelHeight;
     
     auto texture {std::make_unique<sf::RenderTexture>()};
     texture->create(textureWidth, textureHeight);
@@ -72,10 +123,10 @@ std::unique_ptr<sf::RenderTexture> Chip8::display() {
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
             sf::RectangleShape pixel;
-            pixel.setSize({pixelWidth, pixelHeight});
+            pixel.setSize({m_pixelWidth, m_pixelHeight});
 //            pixel.setFillColor(m_pixels[y * HEIGHT + x] ? sf::Color::White : sf::Color::Black);
             pixel.setFillColor((x + y) % 2 == 0 ? sf::Color::White : sf::Color::Black);
-            pixel.setPosition(x * pixelWidth, textureHeight - (y + 1) * pixelHeight);
+            pixel.setPosition(x * m_pixelWidth, textureHeight - (y + 1) * m_pixelHeight);
             texture->draw(pixel);
         }
     }
@@ -85,6 +136,30 @@ std::unique_ptr<sf::RenderTexture> Chip8::display() {
 
 void Chip8::clearScreen() {
     m_pixels.fill(false);
+}
+
+std::uint16_t Chip8::getCurrentOpcode() {
+    return ((m_memory[m_programCounter] << 8) + m_memory[m_programCounter + 1]);
+}
+
+std::uint8_t Chip8::getActionFromOpcode(std::uint16_t opcode) {
+    for (int i = 0; i < m_opcodeIdentifiers.size(); ++i) {
+        auto const& id {m_opcodeIdentifiers[i]};
+        if (id.identifier == (id.mask & opcode))
+            return i;
+    }
+    return 0;
+}
+
+void Chip8::computeAction(std::uint8_t actionId) {
+    switch (actionId) { // TODO
+        case <#constant#>:
+            <#statements#>
+            break;
+            
+        default:
+            break;
+    }
 }
 
 }
