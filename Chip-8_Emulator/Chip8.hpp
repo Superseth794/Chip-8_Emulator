@@ -49,6 +49,7 @@ private:
     
     static constexpr std::size_t MEMORY_SIZE = 4096;
     static constexpr std::size_t MEMORY_BEGIN = 512;
+    static constexpr std::size_t MAX_STACK_SIZE = 15;
     
     static constexpr int WIDTH = 64;
     static constexpr int HEIGHT = 32;
@@ -60,7 +61,7 @@ private:
     
     std::array<std::uint8_t, MEMORY_SIZE> m_memory;
     std::array<std::uint8_t, 16> m_registers;
-    std::array<std::uint16_t, 16> m_stack;
+    std::array<std::uint16_t, MAX_STACK_SIZE> m_stack;
     
     std::array<bool, WIDTH * HEIGHT> m_pixels;
     

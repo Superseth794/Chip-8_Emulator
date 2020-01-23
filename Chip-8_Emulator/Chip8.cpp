@@ -202,11 +202,18 @@ void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
             break;
         
         case 3:
-            
+            m_programCounter = (b3 << 8) + (b2 << 4) + b1;
+            m_programCounter -= 2;
             break;
         
         case 4:
+            m_stack[m_stackLevel] = m_programCounter;
             
+            if (m_stackLevel < MAX_STACK_SIZE)
+                m_stackLevel++;
+            
+            m_programCounter = (b3 << 8) + (b2 << 4) + b1;
+            m_programCounter -= 2;
             break;
         
         case 5:
