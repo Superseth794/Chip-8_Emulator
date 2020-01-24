@@ -1,0 +1,63 @@
+
+# Emulator screen
+
+width: 1400
+
+height: 800
+
+
+# controls
+
+key_1: A
+key_2: Z
+key_3: E
+key_4: Q
+key_5: S
+key_6: D
+key_7: W
+key_8: X
+key_9: C
+key_A: U
+key_0: I
+key_B: O
+key_C: R
+key_D: F
+key_E: V
+key_F: P
+
+
+# Emulation
+
+file: Games/Games/PONG.ch8
+
+update_frequency: 250
+
+framerate: 60
+
+
+# Debug
+
+show_fps: true
+
+show_ips: true
+
+show_opcodes: false
+
+show_registers: false
+
+pause_key: ENTER
+
+reload_key: ERASE
+
+
+# Advanced
+
+memory_size: 4096
+
+memory_start: 512
+
+max_stack_depth: 15
+
+width_resolution: 64
+
+height_resolution: 32
