@@ -16,10 +16,12 @@ using namespace filesystem;
 
 int main(int argc, char ** argv) {
     
-    std::string filename = "BC_Chip8Test/BC_test.ch8";
+//    std::string filename = "BC_Chip8Test/BC_test.ch8";
+//    std::string filename = "Games/Games/Maze.ch8";
+    std::string filename = "Games/Games/AIRPLANE.ch8";
     
     chp::Chip8 emulator;
-    emulator.launch(1200, 1400, filename);
+    emulator.launch(1400, 800, filename);
     
     return 0;
 }

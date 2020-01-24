@@ -35,6 +35,10 @@ void Chip8::launch(unsigned int width, unsigned int height, std::string fileName
             
             if (event.type == event.Closed) {
                 gameWindow.close();
+            } else if (event.type == event.KeyPressed) {
+                handleKey(event.key.code, true);
+            } else if (event.type == event.KeyReleased) {
+                handleKey(event.key.code, false);
             }
             
         }
@@ -68,6 +72,8 @@ void Chip8::init() {
     
     m_memory.fill(0);
     m_registers.fill(0);
+    m_keyPressed.fill(false);
+    
     clearScreen();
     
     loadFont();
@@ -171,6 +177,78 @@ bool Chip8::loadFile(std::string fileName) {
     return true;
 }
 
+void Chip8::handleKey(sf::Keyboard::Key key, bool keyPressed) {
+    switch (key) {
+        case sf::Keyboard::A:
+            m_keyPressed[0] = keyPressed;
+            break;
+            
+        case sf::Keyboard::Z:
+            m_keyPressed[1] = keyPressed;
+        break;
+            
+        case sf::Keyboard::E:
+            m_keyPressed[2] = keyPressed;
+        break;
+            
+        case sf::Keyboard::R:
+            m_keyPressed[3] = keyPressed;
+        break;
+            
+        case sf::Keyboard::Q:
+            m_keyPressed[4] = keyPressed;
+        break;
+            
+        case sf::Keyboard::S:
+            m_keyPressed[5] = keyPressed;
+        break;
+            
+        case sf::Keyboard::D:
+            m_keyPressed[6] = keyPressed;
+        break;
+            
+        case sf::Keyboard::F:
+            m_keyPressed[7] = keyPressed;
+        break;
+            
+        case sf::Keyboard::W:
+            m_keyPressed[8] = keyPressed;
+        break;
+            
+        case sf::Keyboard::X:
+            m_keyPressed[9] = keyPressed;
+        break;
+            
+        case sf::Keyboard::C:
+            m_keyPressed[10] = keyPressed;
+        break;
+            
+        case sf::Keyboard::V:
+            m_keyPressed[11] = keyPressed;
+        break;
+            
+        case sf::Keyboard::U:
+            m_keyPressed[12] = keyPressed;
+        break;
+            
+        case sf::Keyboard::I:
+            m_keyPressed[13] = keyPressed;
+        break;
+            
+        case sf::Keyboard::O:
+            m_keyPressed[14] = keyPressed;
+        break;
+            
+        case sf::Keyboard::P:
+            m_keyPressed[15] = keyPressed;
+        break;
+            
+        default:
+            // Key event is not handled by Chip8
+            break;
+    }
+}
+
 void Chip8::update() {
     
 //    std::cout << m_programCounter << std::endl;
@@ -219,7 +297,6 @@ std::uint16_t Chip8::getCurrentOpcode() {
 }
 
 std::uint8_t Chip8::getActionFromOpcode(std::uint16_t opcode) {
-    std::cout << std::hexfloat << opcode<< std::endl;
     for (int i = 0; i < m_opcodeIdentifiers.size(); ++i) {
         auto const& id {m_opcodeIdentifiers[i]};
         if (id.identifier == (id.mask & opcode))
@@ -251,7 +328,7 @@ void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
 //    printBinairy(b3);
 //    std::cout << std::endl;
     
-    std::cout << "-> " << actionId << std::endl;
+    std::cout << "-> " << std::hex << actionId << " <-" << std::endl;
     
     switch (actionId) {
         case 0:
@@ -377,23 +454,25 @@ void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
             break;
         
         case 24:
-            
+            if (m_keyPressed[m_registers[b3]])
+                m_programCounter += 2;
             break;
         
         case 25:
-            
+            if (!m_keyPressed[m_registers[b3]])
+                m_programCounter += 2;
             break;
         
         case 26:
-            
+            m_registers[b3] = m_gameCounter;
             break;
         
         case 27:
-            
+            while (!sf::Event::KeyPressed){}
             break;
         
         case 28:
-            
+            m_gameCounter = m_registers[b3];
             break;
         
         case 29:

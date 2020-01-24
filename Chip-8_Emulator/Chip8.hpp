@@ -40,6 +40,8 @@ private:
     void loadFont();
     bool loadFile(std::string fileName);
     
+    void handleKey(sf::Keyboard::Key key, bool keyPressed);
+    
     void update();
     std::unique_ptr<sf::RenderTexture> display();
     
@@ -67,6 +69,7 @@ private:
     std::array<std::uint8_t, MEMORY_SIZE> m_memory;
     std::array<std::uint8_t, 16> m_registers;
     std::array<std::uint16_t, MAX_STACK_SIZE> m_stack;
+    std::array<bool, 16> m_keyPressed;
     
     std::array<bool, WIDTH * HEIGHT> m_pixels;
     
