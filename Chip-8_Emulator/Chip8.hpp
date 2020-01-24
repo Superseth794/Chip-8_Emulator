@@ -2,7 +2,7 @@
 //  Chip8.hpp
 //  Chip-8_Emulator
 //
-//  Created by Jaraxus on 22/01/2020.
+//  Created on 22/01/2020.
 //
 
 #ifndef Chip8_hpp

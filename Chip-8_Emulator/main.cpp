@@ -17,8 +17,8 @@ using namespace filesystem;
 int main(int argc, char ** argv) {
     
 //    std::string filename = "BC_Chip8Test/BC_test.ch8";
-    std::string filename = "Games/Games/Breakout.ch8";
-//    std::string filename = "Games/Games/AIRPLANE.ch8";
+//    std::string filename = "Games/Games/Breakout.ch8";
+    std::string filename = "Games/Games/PONG.ch8";
     
     chp::Chip8 emulator;
     emulator.launch(1400, 800, filename);

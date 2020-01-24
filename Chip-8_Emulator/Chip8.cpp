@@ -2,7 +2,7 @@
 //  Chip8.cpp
 //  Chip-8_Emulator
 //
-//  Created by Jaraxus on 22/01/2020.
+//  Created on 22/01/2020.
 //
 
 #include "Chip8.hpp"
@@ -44,7 +44,6 @@ void Chip8::launch(unsigned int width, unsigned int height, std::string fileName
         }
         
         if (1.f / executionTimer.getElapsedTime().asSeconds() <= m_frequency) {
-//            clearScreen();
             update();
             
 //            std::cout << "fps: " << 1.f / executionTimer.getElapsedTime().asSeconds() << std::endl;
@@ -422,7 +421,7 @@ void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
             break;
         
         case 16:
-            m_registers[0xF] = m_registers[b3] & 0x1;
+            m_registers[0xF] = m_registers[b3] & 0x01;
             m_registers[b3] = m_registers[b3] >> 1;
             break;
         
@@ -435,7 +434,7 @@ void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
             break;
         
         case 18:
-            m_registers[0xF] = (m_registers[b3] >> 3) & 0x1;
+            m_registers[0xF] = (m_registers[b3] >> 7);
             m_registers[b3] = m_registers[b3] << 1;
             break;
         
@@ -450,6 +449,7 @@ void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
         
         case 21:
             m_programCounter = (b3 << 8) + (b2 << 4) + b1 + m_registers[0];
+            m_programCounter -= 2;
             break;
         
         case 22:
