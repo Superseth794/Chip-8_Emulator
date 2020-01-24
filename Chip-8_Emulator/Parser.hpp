@@ -46,16 +46,41 @@ public:
         T result;
         std::stringstream stream(subString);
         
-        stream.ignore(':');
-        stream.get();
+        while (stream.get() != ':') {}
+        std::cout << stream.get() << std::endl;
         
         stream >> result;
         
         return result;
     }
     
+    template <>
+    std::optional<bool> get<bool>(std::string const& identifier) {
+        std::string subString = std::move(find(identifier));
+
+        if (subString == "")
+            return std::nullopt;
+
+        std::string result;
+        std::stringstream stream(subString);
+
+        while (stream.get() != ':') {}
+        std::cout << stream.get() << std::endl;
+
+        char read = stream.get();
+        while (read != ' ' && !stream.eof()) {
+             result += read;
+             read = stream.get();
+        }
+        
+        std::cout << subString << std::endl;
+        
+        return std::optional<bool>(result == "true");
+    }
+    
 private:
-    std::string&& find(std::string const& identifier) {
+//    std::string&& find(std::string const& identifier) {
+    std::string find(std::string const& identifier) {
         auto startIdentifier {m_file.tellg()};
         std::string result;
         do {
@@ -66,7 +91,8 @@ private:
                 return std::forward<std::string>(result);
         } while (m_file.tellg() != startIdentifier);
         result = "";
-        return std::forward<std::string>(result);
+//        return std::forward<std::string>(result);
+        return result;
     }
     
 private:
