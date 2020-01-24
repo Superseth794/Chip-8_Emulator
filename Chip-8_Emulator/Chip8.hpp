@@ -19,6 +19,7 @@
 # include <time.h>
 
 # include <SFML/Graphics.hpp>
+# include <SFML/Audio.hpp>
 
 # include "ExternalLibrairies/TSL/hopscotch_map.h"
 
@@ -85,6 +86,8 @@ private:
         std::uint16_t identifier;
     };
     std::array<OpcodeIdentifier, 35> m_opcodeIdentifiers;
+    
+    sf::Music m_defaultSound;
     
 };
 

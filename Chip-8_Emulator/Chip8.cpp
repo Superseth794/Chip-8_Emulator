@@ -84,6 +84,9 @@ void Chip8::init() {
     m_soundCounter = 0;
     m_registerAdress = 0;
     
+    if (!m_defaultSound.openFromFile("Resources/sfx_sounds_high2.wav"))
+        throw std::runtime_error("Error: could not load sound from file Resources/sfx_sounds_high2.wav");
+    
     m_opcodeIdentifiers[0].mask = 0x0000; m_opcodeIdentifiers[0].identifier = 0x0FFF;
     m_opcodeIdentifiers[1].mask = 0xFFFF; m_opcodeIdentifiers[1].identifier = 0x00E0;
     m_opcodeIdentifiers[2].mask = 0xFFFF; m_opcodeIdentifiers[2].identifier = 0x00EE;
@@ -252,19 +255,23 @@ void Chip8::handleKey(sf::Keyboard::Key key, bool keyPressed) {
 void Chip8::update() {
     
 //    std::cout << m_programCounter << std::endl;
-    
-    if (m_gameCounter > 0)
-        m_gameCounter--;
-    
-    if (m_soundCounter > 0)
-        m_soundCounter--;
-    
     auto const opcode {getCurrentOpcode()};
     std::cout << "# " << opcode << std::endl;
     auto const actionId {getActionFromOpcode(opcode)};
     std::cout << "> " << actionId << std::endl;
     computeAction(actionId, opcode);
     m_programCounter += 2;
+    
+    if (m_gameCounter > 0)
+        m_gameCounter--;
+    
+    // https://opengameart.org/content/512-sound-effects-8-bit-style
+    
+    if (m_soundCounter > 0) {
+        m_defaultSound.stop();
+        m_defaultSound.play();
+        m_soundCounter--;
+    }
 }
 
 std::unique_ptr<sf::RenderTexture> Chip8::display() {
