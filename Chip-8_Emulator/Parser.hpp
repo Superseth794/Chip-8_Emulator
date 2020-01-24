@@ -40,14 +40,16 @@ public:
     std::optional<T> get(std::string const& identifier) {
         auto subString = std::move(find(identifier));
         
-        if (subString == "")
+        if (subString == "") {
+            std::cout << "Error: could not parse data from identifier: " << identifier << std::endl;
             return std::nullopt;
+        }
         
         T result;
         std::stringstream stream(subString);
         
         while (stream.get() != ':') {}
-        std::cout << stream.get() << std::endl;
+        stream.get();
         
         stream >> result;
         
@@ -58,14 +60,16 @@ public:
     std::optional<bool> get<bool>(std::string const& identifier) {
         std::string subString = std::move(find(identifier));
 
-        if (subString == "")
+        if (subString == "") {
+            std::cout << "Error: could not parse data from identifier: " << identifier << std::endl;
             return std::nullopt;
+        }
 
         std::string result;
         std::stringstream stream(subString);
 
         while (stream.get() != ':') {}
-        std::cout << stream.get() << std::endl;
+        stream.get();
 
         char read = stream.get();
         while (read != ' ' && !stream.eof()) {
