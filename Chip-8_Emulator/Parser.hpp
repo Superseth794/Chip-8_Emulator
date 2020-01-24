@@ -1,0 +1,81 @@
+//
+//  Parser.hpp
+//  Chip-8_Emulator
+//
+//  Created by Jaraxus on 24/01/2020.
+//
+
+#ifndef Parser_hpp
+#define Parser_hpp
+
+# include <iostream>
+# include <string>
+# include <fstream>
+# include <sstream>
+
+namespace chp {
+
+class Parser {
+public:
+    Parser() = default;
+    ~Parser() {
+        m_file.close();
+    }
+    
+    Parser(Parser && other) = delete;
+    Parser(Parser const& other) = delete;
+    void operator=(Parser const& other) = delete;
+    
+    bool loadFile(std::string const& filename) {
+        m_file.open(filename);
+        m_fileName = filename;
+        return m_file.is_open();
+    }
+    
+    void reload() {
+        m_file.seekg(std::ios_base::beg);
+    }
+    
+    template <typename T>
+    std::optional<T> get(std::string const& identifier) {
+        auto subString = std::move(find(identifier));
+        
+        if (subString == "")
+            return std::nullopt;
+        
+        T result;
+        std::stringstream stream(subString);
+        
+        stream.ignore(':');
+        stream.get();
+        
+        stream >> result;
+        
+        return result;
+    }
+    
+private:
+    std::string&& find(std::string const& identifier) {
+        auto startIdentifier {m_file.tellg()};
+        std::string result;
+        do {
+            if (m_file.ios_base::eof())
+                reload();
+            std::getline(m_file, result);
+            if (result.find(identifier) != std::string::npos)
+                return std::forward<std::string>(result);
+        } while (m_file.tellg() != startIdentifier);
+        result = "";
+        return std::forward<std::string>(result);
+    }
+    
+private:
+    static constexpr std::size_t MAX_INPUT_SIZE = 2048;
+    
+    std::ifstream m_file;
+    std::string m_fileName;
+};
+
+}
+
+#endif /* Parser_hpp */
