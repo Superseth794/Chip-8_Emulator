@@ -11,6 +11,8 @@
 # include <iostream>
 # include <string>
 # include <array>
+# include <vector>
+# include <algorithm>
 # include <memory>
 # include <fstream>
 # include <limits>
@@ -22,6 +24,8 @@
 # include <SFML/Audio.hpp>
 
 # include "ExternalLibrairies/TSL/hopscotch_map.h"
+
+# include "Parser.hpp"
 
 namespace chp {
 
@@ -38,6 +42,7 @@ public:
     
 private:
     void init();
+    void loadConfig();
     void loadFont();
     bool loadFile(std::string fileName);
     
@@ -55,24 +60,27 @@ private:
     
 private:
     
-    static constexpr std::size_t MEMORY_SIZE = 4096;
-    static constexpr std::size_t MEMORY_BEGIN = 512;
-    static constexpr std::size_t MAX_STACK_SIZE = 15;
+    std::size_t m_memorySize = 4096;
+    std::size_t m_memoryBegin = 512;
+    std::size_t m_maxStackSize = 15;
     
-    static constexpr int WIDTH = 64;
-    static constexpr int HEIGHT = 32;
-    float m_pixelWidth = 0;
-    float m_pixelHeight = 0;
+    unsigned int m_windowWidth = 1400;
+    unsigned int m_windowHeight = 800;
+    std::size_t m_width = 64;
+    std::size_t m_height = 32;
+//    float m_pixelWidth = 0;
+//    float m_pixelHeight = 0;
     
     int m_fps = 60;
     int m_frequency = 250; // Hz
     
-    std::array<std::uint8_t, MEMORY_SIZE> m_memory;
+    std::vector<std::uint8_t> m_memory;
+    std::vector<std::uint16_t> m_stack;
+    
     std::array<std::uint8_t, 16> m_registers;
-    std::array<std::uint16_t, MAX_STACK_SIZE> m_stack;
     std::array<bool, 16> m_keyPressed;
     
-    std::array<bool, WIDTH * HEIGHT> m_pixels;
+    std::vector<bool> m_pixels;
     
     std::uint16_t m_programCounter;
     std::uint8_t m_stackLevel;
@@ -88,6 +96,7 @@ private:
     std::array<OpcodeIdentifier, 35> m_opcodeIdentifiers;
     
     sf::Music m_defaultSound;
+    sf::Font m_defaultFont;
     
 };
 

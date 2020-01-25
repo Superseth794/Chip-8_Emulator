@@ -12,15 +12,7 @@ namespace chp {
 void Chip8::launch(unsigned int width, unsigned int height, std::string fileName) {
     init();
     
-    if (!loadFile(fileName)) {
-        throw std::runtime_error("Error: could not load file " + fileName);
-        return;
-    }
-    
-    m_pixelWidth = static_cast<float>(width) / WIDTH;
-    m_pixelHeight = static_cast<float>(height) / HEIGHT;
-    
-    sf::RenderWindow gameWindow(sf::VideoMode(m_pixelWidth * WIDTH, m_pixelHeight * HEIGHT), "Chip-8");
+    sf::RenderWindow gameWindow(sf::VideoMode(m_windowWidth, m_windowHeight), "Chip-8");
     
     sf::Clock executionTimer;
     executionTimer.restart();
@@ -69,22 +61,17 @@ void Chip8::launch(unsigned int width, unsigned int height, std::string fileName
 void Chip8::init() {
     srand(static_cast<unsigned int>(time(nullptr)));
     
-    m_memory.fill(0);
-    m_registers.fill(0);
-    m_keyPressed.fill(false);
-    
+    loadConfig();
     clearScreen();
-    
     loadFont();
     
-    m_programCounter = MEMORY_BEGIN;
+    m_programCounter = m_memoryBegin;
     m_stackLevel = 0;
     m_gameCounter = 0;
     m_soundCounter = 0;
     m_registerAdress = 0;
     
-    if (!m_defaultSound.openFromFile("Resources/sfx_sounds_high2.wav"))
-        throw std::runtime_error("Error: could not load sound from file Resources/sfx_sounds_high2.wav");
+    std::fill(m_keyPressed.begin(), m_keyPressed.end(), false);
     
     m_opcodeIdentifiers[0].mask = 0x0000; m_opcodeIdentifiers[0].identifier = 0x0FFF;
     m_opcodeIdentifiers[1].mask = 0xFFFF; m_opcodeIdentifiers[1].identifier = 0x00E0;
@@ -121,6 +108,43 @@ void Chip8::init() {
     m_opcodeIdentifiers[32].mask = 0xF0FF; m_opcodeIdentifiers[32].identifier = 0xF033;
     m_opcodeIdentifiers[33].mask = 0xF0FF; m_opcodeIdentifiers[33].identifier = 0xF055;
     m_opcodeIdentifiers[34].mask = 0xF0FF; m_opcodeIdentifiers[34].identifier = 0xF065;
+}
+
+void Chip8::loadConfig() {
+    Parser parser;
+    if (!parser.loadFile("Config.txt"))
+        throw std::runtime_error("Error: could not load Config.txt file");
+    
+    m_windowWidth = parser.get<decltype(m_windowWidth)>("window_width").value_or(m_width);
+    m_windowHeight = parser.get<decltype(m_windowHeight)>("window_height").value_or(m_height);
+    
+    m_frequency = parser.get<decltype(m_frequency)>("update_frequency").value_or(m_frequency);
+    m_fps = parser.get<decltype(m_fps)>("framerate").value_or(m_fps);
+    
+    std::string gameFilename {parser.get<decltype(gameFilename)>("file").value_or("Games/Games/PONG.ch8")};
+    std::string soundFilename {parser.get<decltype(soundFilename)>("sound").value_or("Resources/Sounds/sfx_sounds_high2.wav")};
+    std::string fontFilename {parser.get<decltype(fontFilename)>("font").value_or("Resources/Fonts/ArcadeClassic/ARCADECLASSIC.TTF")};
+    
+    m_memorySize = parser.get<decltype(m_memorySize)>("memory_size").value_or(m_memorySize);
+    m_memoryBegin = parser.get<decltype(m_memoryBegin)>("memory_start").value_or(m_memoryBegin);
+    m_maxStackSize = parser.get<decltype(m_maxStackSize)>("max_stack_depth").value_or(m_maxStackSize);
+    
+    m_memory.resize(m_memorySize);
+    m_stack.resize(m_maxStackSize);
+    m_pixels.resize(m_width * m_height);
+    
+    std::fill(m_memory.begin(), m_memory.end(), 0);
+    std::fill(m_registers.begin(), m_registers.end(), 0);
+    
+    m_width = parser.get<decltype(m_width)>("width_resolution").value_or(m_width);
+    m_height = parser.get<decltype(m_height)>("height_resolution").value_or(m_height);
+    
+    if (!loadFile(gameFilename))
+        throw std::runtime_error("Error: could not load file " + gameFilename);
+    if (!m_defaultSound.openFromFile(soundFilename))
+        throw std::runtime_error("Error: could not load sound from file " + soundFilename);
+    if (!m_defaultFont.loadFromFile(fontFilename))
+    throw std::runtime_error("Error: could not load font from file " + fontFilename);
 }
 
 void Chip8::loadFont() {
@@ -164,9 +188,9 @@ bool Chip8::loadFile(std::string fileName) {
     std::uint8_t valueRead;
     std::size_t bytesRead = 0;
     
-    while (sourceFile.is_open() && !sourceFile.eof() && bytesRead < MEMORY_SIZE - MEMORY_BEGIN) {
+    while (sourceFile.is_open() && !sourceFile.eof() && bytesRead < m_memorySize - m_memoryBegin) {
         valueRead = sourceFile.get();
-        m_memory[MEMORY_BEGIN + bytesRead++] = valueRead;
+        m_memory[m_memoryBegin + bytesRead++] = valueRead;
     }
     
     if (!sourceFile.is_open()) {
@@ -253,11 +277,9 @@ void Chip8::handleKey(sf::Keyboard::Key key, bool keyPressed) {
 
 void Chip8::update() {
     
-//    std::cout << m_programCounter << std::endl;
     auto const opcode {getCurrentOpcode()};
-    std::cout << "# " << opcode << std::endl;
     auto const actionId {getActionFromOpcode(opcode)};
-    std::cout << "> " << actionId << std::endl;
+    
     computeAction(actionId, opcode);
     m_programCounter += 2;
     
@@ -275,20 +297,21 @@ void Chip8::update() {
 
 std::unique_ptr<sf::RenderTexture> Chip8::display() {
     
-    const int textureWidth = WIDTH * m_pixelWidth;
-    const int textureHeight = HEIGHT * m_pixelHeight;
+    const float pixelWidth = static_cast<float>(m_windowWidth) / m_width;
+    const float pixelHeight = static_cast<float>(m_windowHeight) / m_height;
+    
+    const int textureWidth = m_width * pixelWidth;
+    const int textureHeight = m_height * pixelHeight;
     
     auto texture {std::make_unique<sf::RenderTexture>()};
     texture->create(textureWidth, textureHeight);
     
-    for (int y = 0; y < HEIGHT; ++y) {
-        for (int x = 0; x < WIDTH; ++x) {
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
             sf::RectangleShape pixel;
-            pixel.setSize({m_pixelWidth, m_pixelHeight});
-            pixel.setFillColor(m_pixels[y * WIDTH + x] ? sf::Color::White : sf::Color::Black);
-//            pixel.setFillColor((x + y) % 2 == 0 ? sf::Color::White : sf::Color::Black);
-//            pixel.setPosition(x * m_pixelWidth, textureHeight - (y + 1) * m_pixelHeight);
-            pixel.setPosition(x * m_pixelWidth, y * m_pixelHeight);
+            pixel.setSize({pixelWidth, pixelHeight});
+            pixel.setFillColor(m_pixels[y * m_width + x] ? sf::Color::White : sf::Color::Black);
+            pixel.setPosition(x * pixelWidth, y * pixelHeight);
             texture->draw(pixel);
         }
     }
@@ -334,11 +357,9 @@ void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
 //    printBinairy(b3);
 //    std::cout << std::endl;
     
-    std::cout << "-> " << std::hex << actionId << " <-" << std::endl;
-    
     switch (actionId) {
         case 0:
-            std::cout << "error" << std::endl;
+            std::cout << "Error: undefined action (id: 0)" << std::endl;
             break;
         
         case 1:
@@ -358,7 +379,7 @@ void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
         case 4:
             m_stack[m_stackLevel] = m_programCounter;
             
-            if (m_stackLevel < MAX_STACK_SIZE)
+            if (m_stackLevel < m_maxStackSize)
                 m_stackLevel++;
             
             m_programCounter = (b3 << 8) + (b2 << 4) + b1;
@@ -505,14 +526,14 @@ void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
             break;
         case 33:
             for (std::uint8_t i = 0; i <= b3; ++i) {
-                if (m_registerAdress + i < MEMORY_SIZE)
+                if (m_registerAdress + i < m_memorySize)
                     m_registers[m_registerAdress + i] = m_registers[i];
             }
             break;
         
         case 34:
             for (std::uint8_t i = 0; i <= b3; ++i) {
-                if (m_registerAdress + i < MEMORY_SIZE)
+                if (m_registerAdress + i < m_memorySize)
                     m_registers[i] = m_registers[m_registerAdress + i];
             }
             break;
@@ -524,7 +545,7 @@ void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
 }
 
 void Chip8::clearScreen() {
-    m_pixels.fill(false);
+    std::fill(m_pixels.begin(), m_pixels.end(), false);
 }
 
 void Chip8::drawSprite(std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
@@ -532,16 +553,16 @@ void Chip8::drawSprite(std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
     
     for (int dY = 0; dY < b1; ++dY) {
         const std::uint8_t rowDescription = m_memory[m_registerAdress + dY];
-        const int y = (m_registers[b2] + dY) % HEIGHT;
+        const int y = (m_registers[b2] + dY) % m_height;
         for (int bitId = 0; bitId < 8; ++bitId) {
             bool pixelOn = rowDescription & (0x1 << (7 - bitId));
             if (!pixelOn)
                 continue;
-            const int x = (m_registers[b3] + bitId) % WIDTH;
-            if (m_pixels[y * WIDTH + x]) {
+            const int x = (m_registers[b3] + bitId) % m_width;
+            if (m_pixels[y * m_width + x]) {
                 m_registers[0xF] = 1;
             }
-            m_pixels[y * WIDTH + x] = !m_pixels[y * WIDTH + x];
+            m_pixels[y * m_width + x] = !m_pixels[y * m_width + x];
         }
     }
 }
