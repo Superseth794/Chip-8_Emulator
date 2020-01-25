@@ -84,8 +84,8 @@ void Chip8::loadConfig(std::string const& configFilename) {
     
     m_configFilename = configFilename;
     
-    m_windowWidth = parser.get<decltype(m_windowWidth)>("window_width").value_or(m_width);
-    m_windowHeight = parser.get<decltype(m_windowHeight)>("window_height").value_or(m_height);
+    m_windowWidth = parser.get<decltype(m_windowWidth)>("window_width").value_or(m_windowWidth);
+    m_windowHeight = parser.get<decltype(m_windowHeight)>("window_height").value_or(m_windowHeight);
     
     m_frequency = parser.get<decltype(m_frequency)>("update_frequency").value_or(m_frequency);
     m_fps = parser.get<decltype(m_fps)>("framerate").value_or(m_fps);
