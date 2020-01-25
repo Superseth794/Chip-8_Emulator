@@ -33,7 +33,8 @@ public:
     }
     
     void reload() {
-        m_file.seekg(std::ios_base::beg);
+        m_file.clear();
+        m_file.seekg(0, std::ios_base::beg);
     }
     
     template <typename T>
@@ -77,8 +78,6 @@ public:
              read = stream.get();
         }
         
-        std::cout << subString << std::endl;
-        
         return std::optional<bool>(result == "true");
     }
     
@@ -86,15 +85,19 @@ private:
 //    std::string&& find(std::string const& identifier) {
     std::string find(std::string const& identifier) {
         auto startIdentifier {m_file.tellg()};
+        bool eofReached = false;
         std::string result;
         do {
-            if (m_file.ios_base::eof())
+            if (m_file.ios_base::eof()) {
+                if (eofReached)
+                    return "";
                 reload();
+                eofReached = true;
+            }
             std::getline(m_file, result);
             if (result.find(identifier) != std::string::npos)
                 return std::forward<std::string>(result);
         } while (m_file.tellg() != startIdentifier);
-        result = "";
 //        return std::forward<std::string>(result);
         return result;
     }
