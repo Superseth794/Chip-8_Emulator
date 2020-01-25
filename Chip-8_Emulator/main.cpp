@@ -5,14 +5,9 @@
 //  Created on 22/01/2020.
 //
 
-#include <iostream>
+#include <string>
 
 #include "Chip8.hpp"
-
-#include <stdio.h>
-#include <filesystem>
-using namespace std;
-using namespace filesystem;
 
 int main(int argc, char ** argv) {
     
