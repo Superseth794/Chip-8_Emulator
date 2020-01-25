@@ -45,6 +45,8 @@ private:
     void loadConfig(std::string const& configFilename);
     void loadFont();
     bool loadFile(std::string fileName);
+    void loadOpcodes();
+    void loadActions();
     
     void handleKey(sf::Keyboard::Key key, bool keyPressed);
     
@@ -59,6 +61,8 @@ private:
     void drawSprite(std::uint8_t b1, std::uint8_t b2, std::uint8_t b3);
     
 private:
+    static constexpr std::size_t NB_OPCODES_AVAILABLES = 35;
+    
     std::string m_configFilename;
     
     std::size_t m_memorySize = 4096;
@@ -92,7 +96,9 @@ private:
         std::uint16_t mask;
         std::uint16_t identifier;
     };
-    std::array<OpcodeIdentifier, 35> m_opcodeIdentifiers;
+    std::array<OpcodeIdentifier, NB_OPCODES_AVAILABLES> m_opcodeIdentifiers;
+    
+    std::array<std::function<void(std::uint8_t b1, std::uint8_t b2, std::uint8_t b3)>, NB_OPCODES_AVAILABLES> m_actions;
     
     sf::Music m_defaultSound;
     sf::Font m_defaultFont;

@@ -65,6 +65,9 @@ void Chip8::init(std::string const& configFilename) {
     clearScreen();
     loadFont();
     
+    loadOpcodes();
+    loadActions();
+    
     m_programCounter = m_memoryBegin;
     m_stackLevel = 0;
     m_gameCounter = 0;
@@ -72,42 +75,6 @@ void Chip8::init(std::string const& configFilename) {
     m_registerAdress = 0;
     
     std::fill(m_keyPressed.begin(), m_keyPressed.end(), false);
-    
-    m_opcodeIdentifiers[0].mask = 0x0000; m_opcodeIdentifiers[0].identifier = 0x0FFF;
-    m_opcodeIdentifiers[1].mask = 0xFFFF; m_opcodeIdentifiers[1].identifier = 0x00E0;
-    m_opcodeIdentifiers[2].mask = 0xFFFF; m_opcodeIdentifiers[2].identifier = 0x00EE;
-    m_opcodeIdentifiers[3].mask = 0xF000; m_opcodeIdentifiers[3].identifier = 0x1000;
-    m_opcodeIdentifiers[4].mask = 0xF000; m_opcodeIdentifiers[4].identifier = 0x2000;
-    m_opcodeIdentifiers[5].mask = 0xF000; m_opcodeIdentifiers[5].identifier = 0x3000;
-    m_opcodeIdentifiers[6].mask = 0xF000; m_opcodeIdentifiers[6].identifier = 0x4000;
-    m_opcodeIdentifiers[7].mask = 0xF00F; m_opcodeIdentifiers[7].identifier = 0x5000;
-    m_opcodeIdentifiers[8].mask = 0xF000; m_opcodeIdentifiers[8].identifier = 0x6000;
-    m_opcodeIdentifiers[9].mask = 0xF000; m_opcodeIdentifiers[9].identifier = 0x7000;
-    m_opcodeIdentifiers[10].mask = 0xF00F; m_opcodeIdentifiers[10].identifier = 0x8000;
-    m_opcodeIdentifiers[11].mask = 0xF00F; m_opcodeIdentifiers[11].identifier = 0x8001;
-    m_opcodeIdentifiers[12].mask = 0xF00F; m_opcodeIdentifiers[12].identifier = 0x8002;
-    m_opcodeIdentifiers[13].mask = 0xF00F; m_opcodeIdentifiers[13].identifier = 0x8003;
-    m_opcodeIdentifiers[14].mask = 0xF00F; m_opcodeIdentifiers[14].identifier = 0x8004;
-    m_opcodeIdentifiers[15].mask = 0xF00F; m_opcodeIdentifiers[15].identifier = 0x8005;
-    m_opcodeIdentifiers[16].mask = 0xF00F; m_opcodeIdentifiers[16].identifier = 0x8006;
-    m_opcodeIdentifiers[17].mask = 0xF00F; m_opcodeIdentifiers[17].identifier = 0x8007;
-    m_opcodeIdentifiers[18].mask = 0xF00F; m_opcodeIdentifiers[18].identifier = 0x800E;
-    m_opcodeIdentifiers[19].mask = 0xF00F; m_opcodeIdentifiers[19].identifier = 0x9000;
-    m_opcodeIdentifiers[20].mask = 0xF000; m_opcodeIdentifiers[20].identifier = 0xA000;
-    m_opcodeIdentifiers[21].mask = 0xF000; m_opcodeIdentifiers[21].identifier = 0xB000;
-    m_opcodeIdentifiers[22].mask = 0xF000; m_opcodeIdentifiers[22].identifier = 0xC000;
-    m_opcodeIdentifiers[23].mask = 0xF000; m_opcodeIdentifiers[23].identifier = 0xD000;
-    m_opcodeIdentifiers[24].mask = 0xF0FF; m_opcodeIdentifiers[24].identifier = 0xE09E;
-    m_opcodeIdentifiers[25].mask = 0xF0FF; m_opcodeIdentifiers[25].identifier = 0xE0A1;
-    m_opcodeIdentifiers[26].mask = 0xF0FF; m_opcodeIdentifiers[26].identifier = 0xF007;
-    m_opcodeIdentifiers[27].mask = 0xF0FF; m_opcodeIdentifiers[27].identifier = 0xF00A;
-    m_opcodeIdentifiers[28].mask = 0xF0FF; m_opcodeIdentifiers[28].identifier = 0xF015;
-    m_opcodeIdentifiers[29].mask = 0xF0FF; m_opcodeIdentifiers[29].identifier = 0xF018;
-    m_opcodeIdentifiers[30].mask = 0xF0FF; m_opcodeIdentifiers[30].identifier = 0xF01E;
-    m_opcodeIdentifiers[31].mask = 0xF0FF; m_opcodeIdentifiers[31].identifier = 0xF029;
-    m_opcodeIdentifiers[32].mask = 0xF0FF; m_opcodeIdentifiers[32].identifier = 0xF033;
-    m_opcodeIdentifiers[33].mask = 0xF0FF; m_opcodeIdentifiers[33].identifier = 0xF055;
-    m_opcodeIdentifiers[34].mask = 0xF0FF; m_opcodeIdentifiers[34].identifier = 0xF065;
 }
 
 void Chip8::loadConfig(std::string const& configFilename) {
@@ -205,6 +172,227 @@ bool Chip8::loadFile(std::string fileName) {
     sourceFile.close();
     
     return true;
+}
+
+void Chip8::loadOpcodes() {
+    m_opcodeIdentifiers[0].mask = 0x0000; m_opcodeIdentifiers[0].identifier = 0x0FFF;
+    m_opcodeIdentifiers[1].mask = 0xFFFF; m_opcodeIdentifiers[1].identifier = 0x00E0;
+    m_opcodeIdentifiers[2].mask = 0xFFFF; m_opcodeIdentifiers[2].identifier = 0x00EE;
+    m_opcodeIdentifiers[3].mask = 0xF000; m_opcodeIdentifiers[3].identifier = 0x1000;
+    m_opcodeIdentifiers[4].mask = 0xF000; m_opcodeIdentifiers[4].identifier = 0x2000;
+    m_opcodeIdentifiers[5].mask = 0xF000; m_opcodeIdentifiers[5].identifier = 0x3000;
+    m_opcodeIdentifiers[6].mask = 0xF000; m_opcodeIdentifiers[6].identifier = 0x4000;
+    m_opcodeIdentifiers[7].mask = 0xF00F; m_opcodeIdentifiers[7].identifier = 0x5000;
+    m_opcodeIdentifiers[8].mask = 0xF000; m_opcodeIdentifiers[8].identifier = 0x6000;
+    m_opcodeIdentifiers[9].mask = 0xF000; m_opcodeIdentifiers[9].identifier = 0x7000;
+    m_opcodeIdentifiers[10].mask = 0xF00F; m_opcodeIdentifiers[10].identifier = 0x8000;
+    m_opcodeIdentifiers[11].mask = 0xF00F; m_opcodeIdentifiers[11].identifier = 0x8001;
+    m_opcodeIdentifiers[12].mask = 0xF00F; m_opcodeIdentifiers[12].identifier = 0x8002;
+    m_opcodeIdentifiers[13].mask = 0xF00F; m_opcodeIdentifiers[13].identifier = 0x8003;
+    m_opcodeIdentifiers[14].mask = 0xF00F; m_opcodeIdentifiers[14].identifier = 0x8004;
+    m_opcodeIdentifiers[15].mask = 0xF00F; m_opcodeIdentifiers[15].identifier = 0x8005;
+    m_opcodeIdentifiers[16].mask = 0xF00F; m_opcodeIdentifiers[16].identifier = 0x8006;
+    m_opcodeIdentifiers[17].mask = 0xF00F; m_opcodeIdentifiers[17].identifier = 0x8007;
+    m_opcodeIdentifiers[18].mask = 0xF00F; m_opcodeIdentifiers[18].identifier = 0x800E;
+    m_opcodeIdentifiers[19].mask = 0xF00F; m_opcodeIdentifiers[19].identifier = 0x9000;
+    m_opcodeIdentifiers[20].mask = 0xF000; m_opcodeIdentifiers[20].identifier = 0xA000;
+    m_opcodeIdentifiers[21].mask = 0xF000; m_opcodeIdentifiers[21].identifier = 0xB000;
+    m_opcodeIdentifiers[22].mask = 0xF000; m_opcodeIdentifiers[22].identifier = 0xC000;
+    m_opcodeIdentifiers[23].mask = 0xF000; m_opcodeIdentifiers[23].identifier = 0xD000;
+    m_opcodeIdentifiers[24].mask = 0xF0FF; m_opcodeIdentifiers[24].identifier = 0xE09E;
+    m_opcodeIdentifiers[25].mask = 0xF0FF; m_opcodeIdentifiers[25].identifier = 0xE0A1;
+    m_opcodeIdentifiers[26].mask = 0xF0FF; m_opcodeIdentifiers[26].identifier = 0xF007;
+    m_opcodeIdentifiers[27].mask = 0xF0FF; m_opcodeIdentifiers[27].identifier = 0xF00A;
+    m_opcodeIdentifiers[28].mask = 0xF0FF; m_opcodeIdentifiers[28].identifier = 0xF015;
+    m_opcodeIdentifiers[29].mask = 0xF0FF; m_opcodeIdentifiers[29].identifier = 0xF018;
+    m_opcodeIdentifiers[30].mask = 0xF0FF; m_opcodeIdentifiers[30].identifier = 0xF01E;
+    m_opcodeIdentifiers[31].mask = 0xF0FF; m_opcodeIdentifiers[31].identifier = 0xF029;
+    m_opcodeIdentifiers[32].mask = 0xF0FF; m_opcodeIdentifiers[32].identifier = 0xF033;
+    m_opcodeIdentifiers[33].mask = 0xF0FF; m_opcodeIdentifiers[33].identifier = 0xF055;
+    m_opcodeIdentifiers[34].mask = 0xF0FF; m_opcodeIdentifiers[34].identifier = 0xF065;
+}
+
+void Chip8::loadActions() {
+    m_actions[0] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        std::cout << "Error: undefined action (id: 0)" << std::endl;
+    };
+    
+    m_actions[1] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        clearScreen();
+    };
+    
+    m_actions[2] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (m_stackLevel > 0)
+        m_programCounter = m_stack[--m_stackLevel];
+    };
+    
+    m_actions[3] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_programCounter = (b3 << 8) + (b2 << 4) + b1;
+        m_programCounter -= 2;
+    };
+    
+    m_actions[4] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_stack[m_stackLevel] = m_programCounter;
+        
+        if (m_stackLevel < m_maxStackSize)
+            m_stackLevel++;
+        
+        m_programCounter = (b3 << 8) + (b2 << 4) + b1;
+        m_programCounter -= 2;
+    };
+    
+    m_actions[5] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (m_registers[b3] == (b2 << 4) + b1)
+            m_programCounter += 2;
+    };
+    
+    m_actions[6] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (m_registers[b3] != (b2 << 4) + b1)
+            m_programCounter += 2;
+    };
+    
+    m_actions[7] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (m_registers[b3] == m_registers[b2])
+            m_programCounter += 2;
+    };
+    
+    m_actions[8] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registers[b3] = (b2 << 4) + b1;
+    };
+    
+    m_actions[9] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registers[b3] += (b2 << 4) + b1;
+    };
+    
+    m_actions[10] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registers[b3] = m_registers[b2];
+    };
+    
+    m_actions[11] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registers[b3] |= m_registers[b2];
+    };
+    
+    m_actions[12] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registers[b3] &= m_registers[b2];
+    };
+    
+    m_actions[13] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registers[b3] ^= m_registers[b2];
+    };
+    
+    m_actions[14] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (m_registers[b3] + m_registers[b2] > 0xFF)
+            m_registers[0xF] = 1;
+        else
+            m_registers[0xF] = 0;
+        m_registers[b3] += m_registers[b2];
+    };
+    
+    m_actions[15] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (m_registers[b2] > m_registers[b3])
+            m_registers[0xF] = 0;
+        else
+            m_registers[0xF] = 1;
+        m_registers[b3] -= m_registers[b2];
+    };
+    
+    m_actions[16] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registers[0xF] = m_registers[b3] & 0x01;
+        m_registers[b3] = m_registers[b3] >> 1;
+    };
+    
+    m_actions[17] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (m_registers[b3] > m_registers[b2])
+            m_registers[0xF] = 0;
+        else
+            m_registers[0xF] = 1;
+        m_registers[b3] = m_registers[b2] - m_registers[b3];
+    };
+    
+    m_actions[18] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registers[0xF] = (m_registers[b3] >> 7);
+        m_registers[b3] = m_registers[b3] << 1;
+    };
+    
+    m_actions[19] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (m_registers[b3] != m_registers[b2])
+            m_programCounter += 2;
+    };
+    
+    m_actions[20] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registerAdress = (b3 << 8) + (b2 << 4) + b1;
+    };
+    
+    m_actions[21] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_programCounter = (b3 << 8) + (b2 << 4) + b1 + m_registers[0];
+        m_programCounter -= 2;
+    };
+    
+    m_actions[22] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registers[b3] = rand() % ((b2 << 4) + b1 + 1);
+    };
+    
+    m_actions[23] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        drawSprite(b1, b2, b3);
+    };
+    
+    m_actions[24] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (m_keyPressed[m_registers[b3]])
+            m_programCounter += 2;
+    };
+    
+    m_actions[25] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (!m_keyPressed[m_registers[b3]])
+            m_programCounter += 2;
+    };
+    
+    m_actions[26] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registers[b3] = m_gameCounter;
+    };
+    
+    m_actions[27] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        while (!sf::Event::KeyPressed){}
+    };
+    
+    m_actions[28] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_gameCounter = m_registers[b3];
+    };
+    
+    m_actions[29] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_soundCounter = m_registers[b3];
+    };
+    
+    m_actions[30] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        if (m_registerAdress + m_registers[b3] > 0xFFF)
+            m_registers[0xF] = 1;
+        else
+            m_registers[0xF] = 0;
+        m_registerAdress += m_registers[b3];
+    };
+    
+    m_actions[31] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_registerAdress = 5 * m_registers[b3];
+    };
+    
+    m_actions[32] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        m_memory[m_registerAdress] = (m_registers[b3] - m_registers[b3] % 100) / 100;
+        m_memory[m_registerAdress + 1] = ((m_registers[b3] - m_registers[b3] % 10) / 10) % 10;
+        m_memory[m_registerAdress + 2] = m_registers[b3] - m_registers[m_registerAdress] * 100 - m_memory[m_registerAdress + 1] * 10;
+    };
+    
+    m_actions[33] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        for (std::uint8_t i = 0; i <= b3; ++i) {
+            if (m_registerAdress + i < m_memorySize)
+                m_registers[m_registerAdress + i] = m_registers[i];
+        }
+    };
+    
+    m_actions[34] = [&](std::uint8_t b1, std::uint8_t b2, std::uint8_t b3) {
+        for (std::uint8_t i = 0; i <= b3; ++i) {
+            if (m_registerAdress + i < m_memorySize)
+                m_registers[i] = m_registers[m_registerAdress + i];
+        }
+    };
 }
 
 void Chip8::handleKey(sf::Keyboard::Key key, bool keyPressed) {
@@ -344,208 +532,16 @@ void printBinairy(std::uint8_t number) {
 }
 
 void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {
-    
     std::uint8_t b3,b2,b1;
     
     b3 = (opcode&(0x0F00)) >> 8;
     b2 = (opcode&(0x00F0)) >> 4;
     b1 = (opcode&(0x000F));
     
-//    b3 = (opcode >> 8) & 0xF;
-//    b2 = (opcode >> 4) & 0xF;
-//    b1 = opcode & 0xF;
+    if (actionId >= NB_OPCODES_AVAILABLES)
+        throw std::runtime_error("Action id " + std::to_string(actionId) + " could not be recognised neither handled");
     
-//    std::cout << std::bitset<16>(opcode) << " ";
-//    printBinairy(b1);
-//    printBinairy(b2);
-//    printBinairy(b3);
-//    std::cout << std::endl;
-    
-    switch (actionId) {
-        case 0:
-            std::cout << "Error: undefined action (id: 0)" << std::endl;
-            break;
-        
-        case 1:
-            clearScreen();
-            break;
-        
-        case 2:
-            if (m_stackLevel > 0)
-                m_programCounter = m_stack[--m_stackLevel];
-            break;
-        
-        case 3:
-            m_programCounter = (b3 << 8) + (b2 << 4) + b1;
-            m_programCounter -= 2;
-            break;
-        
-        case 4:
-            m_stack[m_stackLevel] = m_programCounter;
-            
-            if (m_stackLevel < m_maxStackSize)
-                m_stackLevel++;
-            
-            m_programCounter = (b3 << 8) + (b2 << 4) + b1;
-            m_programCounter -= 2;
-            break;
-        
-        case 5:
-            if (m_registers[b3] == (b2 << 4) + b1)
-                m_programCounter += 2;
-            break;
-        
-        case 6:
-            if (m_registers[b3] != (b2 << 4) + b1)
-                m_programCounter += 2;
-            break;
-        
-        case 7:
-            if (m_registers[b3] == m_registers[b2])
-                m_programCounter += 2;
-            break;
-        
-        case 8:
-            m_registers[b3] = (b2 << 4) + b1;
-            break;
-        
-        case 9:
-            m_registers[b3] += (b2 << 4) + b1;
-            break;
-        
-        case 10:
-            m_registers[b3] = m_registers[b2];
-            break;
-        
-        case 11:
-            m_registers[b3] |= m_registers[b2];
-            break;
-        
-        case 12:
-            m_registers[b3] &= m_registers[b2];
-            break;
-        
-        case 13:
-            m_registers[b3] ^= m_registers[b2];
-            break;
-        
-        case 14:
-            if (m_registers[b3] + m_registers[b2] > 0xFF)
-                m_registers[0xF] = 1;
-            else
-                m_registers[0xF] = 0;
-            m_registers[b3] += m_registers[b2];
-            break;
-        
-        case 15:
-            if (m_registers[b2] > m_registers[b3])
-                m_registers[0xF] = 0;
-            else
-                m_registers[0xF] = 1;
-            m_registers[b3] -= m_registers[b2];
-            break;
-        
-        case 16:
-            m_registers[0xF] = m_registers[b3] & 0x01;
-            m_registers[b3] = m_registers[b3] >> 1;
-            break;
-        
-        case 17:
-            if (m_registers[b3] > m_registers[b2])
-                m_registers[0xF] = 0;
-            else
-                m_registers[0xF] = 1;
-            m_registers[b3] = m_registers[b2] - m_registers[b3];
-            break;
-        
-        case 18:
-            m_registers[0xF] = (m_registers[b3] >> 7);
-            m_registers[b3] = m_registers[b3] << 1;
-            break;
-        
-        case 19:
-            if (m_registers[b3] != m_registers[b2])
-                m_programCounter += 2;
-            break;
-        
-        case 20:
-            m_registerAdress = (b3 << 8) + (b2 << 4) + b1;
-            break;
-        
-        case 21:
-            m_programCounter = (b3 << 8) + (b2 << 4) + b1 + m_registers[0];
-            m_programCounter -= 2;
-            break;
-        
-        case 22:
-            m_registers[b3] = rand() % ((b2 << 4) + b1 + 1);
-            break;
-        
-        case 23:
-            drawSprite(b1, b2, b3);
-            break;
-        
-        case 24:
-            if (m_keyPressed[m_registers[b3]])
-                m_programCounter += 2;
-            break;
-        
-        case 25:
-            if (!m_keyPressed[m_registers[b3]])
-                m_programCounter += 2;
-            break;
-        
-        case 26:
-            m_registers[b3] = m_gameCounter;
-            break;
-        
-        case 27:
-            while (!sf::Event::KeyPressed){}
-            break;
-        
-        case 28:
-            m_gameCounter = m_registers[b3];
-            break;
-        
-        case 29:
-            m_soundCounter = m_registers[b3];
-            break;
-        
-        case 30:
-            if (m_registerAdress + m_registers[b3] > 0xFFF)
-                m_registers[0xF] = 1;
-            else
-                m_registers[0xF] = 0;
-            m_registerAdress += m_registers[b3];
-            break;
-        
-        case 31:
-            m_registerAdress = 5 * m_registers[b3];
-            break;
-        
-        case 32:
-            m_memory[m_registerAdress] = (m_registers[b3] - m_registers[b3] % 100) / 100;
-            m_memory[m_registerAdress + 1] = ((m_registers[b3] - m_registers[b3] % 10) / 10) % 10;
-            m_memory[m_registerAdress + 2] = m_registers[b3] - m_registers[m_registerAdress] * 100 - m_memory[m_registerAdress + 1] * 10;
-            break;
-        case 33:
-            for (std::uint8_t i = 0; i <= b3; ++i) {
-                if (m_registerAdress + i < m_memorySize)
-                    m_registers[m_registerAdress + i] = m_registers[i];
-            }
-            break;
-        
-        case 34:
-            for (std::uint8_t i = 0; i <= b3; ++i) {
-                if (m_registerAdress + i < m_memorySize)
-                    m_registers[i] = m_registers[m_registerAdress + i];
-            }
-            break;
-        
-        default:
-            throw std::runtime_error("Action id " + std::to_string(actionId) + " could not be recognised neither handled");
-            break;
-    }
+    m_actions[actionId](b1, b2, b3);
 }
 
 void Chip8::clearScreen() {
