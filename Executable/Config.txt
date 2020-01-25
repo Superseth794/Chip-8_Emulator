@@ -1,9 +1,9 @@
 
-# Emulator screen
+# Emulator window
 
-width: 1400
+window_width: 1400
 
-height: 800
+window_height: 800
 
 
 # controls
@@ -28,11 +28,18 @@ key_F: P
 
 # Emulation
 
-file: Games/Games/PONG.ch8
-
 update_frequency: 250
 
 framerate: 60
+
+
+# resources
+
+file: Games/Games/AIRPLANE.ch8
+
+sound: Resources/Sounds/sfx_sounds_high2.wav
+
+font: Resources/Fonts/ArcadeClassic/ARCADECLASSIC.TTF
 
 
 # Debug
@@ -50,7 +57,7 @@ pause_key: ENTER
 reload_key: ERASE
 
 
-# Advanced
+# Advanced (highly recomended settings)
 
 memory_size: 4096
 
