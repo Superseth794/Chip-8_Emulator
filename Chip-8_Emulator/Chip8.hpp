@@ -38,11 +38,11 @@ public:
     Chip8(Chip8 const& other) = delete;
     Chip8 operator=(Chip8 const& other) = delete;
     
-    void launch(unsigned int width, unsigned int height, std::string fileName);
+    void launch(std::string const& configFilename);
     
 private:
-    void init();
-    void loadConfig();
+    void init(std::string const& configFilename);
+    void loadConfig(std::string const& configFilename);
     void loadFont();
     bool loadFile(std::string fileName);
     
@@ -59,6 +59,7 @@ private:
     void drawSprite(std::uint8_t b1, std::uint8_t b2, std::uint8_t b3);
     
 private:
+    std::string m_configFilename;
     
     std::size_t m_memorySize = 4096;
     std::size_t m_memoryBegin = 512;
@@ -68,8 +69,6 @@ private:
     unsigned int m_windowHeight = 800;
     std::size_t m_width = 64;
     std::size_t m_height = 32;
-//    float m_pixelWidth = 0;
-//    float m_pixelHeight = 0;
     
     int m_fps = 60;
     int m_frequency = 250; // Hz

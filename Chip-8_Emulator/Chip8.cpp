@@ -9,8 +9,8 @@
 
 namespace chp {
 
-void Chip8::launch(unsigned int width, unsigned int height, std::string fileName) {
-    init();
+void Chip8::launch(std::string const& configFilename) {
+    init(configFilename);
     
     sf::RenderWindow gameWindow(sf::VideoMode(m_windowWidth, m_windowHeight), "Chip-8");
     
@@ -58,10 +58,10 @@ void Chip8::launch(unsigned int width, unsigned int height, std::string fileName
     }
 }
 
-void Chip8::init() {
+void Chip8::init(std::string const& configFilename) {
     srand(static_cast<unsigned int>(time(nullptr)));
     
-    loadConfig();
+    loadConfig(configFilename);
     clearScreen();
     loadFont();
     
@@ -110,10 +110,12 @@ void Chip8::init() {
     m_opcodeIdentifiers[34].mask = 0xF0FF; m_opcodeIdentifiers[34].identifier = 0xF065;
 }
 
-void Chip8::loadConfig() {
+void Chip8::loadConfig(std::string const& configFilename) {
     Parser parser;
-    if (!parser.loadFile("Config.txt"))
-        throw std::runtime_error("Error: could not load Config.txt file");
+    if (!parser.loadFile(configFilename))
+        throw std::runtime_error("Error: could not load config file " + configFilename);
+    
+    m_configFilename = configFilename;
     
     m_windowWidth = parser.get<decltype(m_windowWidth)>("window_width").value_or(m_width);
     m_windowHeight = parser.get<decltype(m_windowHeight)>("window_height").value_or(m_height);
@@ -140,11 +142,13 @@ void Chip8::loadConfig() {
     m_height = parser.get<decltype(m_height)>("height_resolution").value_or(m_height);
     
     if (!loadFile(gameFilename))
-        throw std::runtime_error("Error: could not load file " + gameFilename);
+        throw std::runtime_error("Error: could not load game from file " + gameFilename);
     if (!m_defaultSound.openFromFile(soundFilename))
         throw std::runtime_error("Error: could not load sound from file " + soundFilename);
     if (!m_defaultFont.loadFromFile(fontFilename))
     throw std::runtime_error("Error: could not load font from file " + fontFilename);
+    
+    std::cout << "Succesfully loaded " << m_configFilename << std::endl;
 }
 
 void Chip8::loadFont() {
