@@ -22,7 +22,7 @@ public:
             if (it->second == key)
                 return it->first;
         }
-        return "";
+        return "Unknown";
     }
     
     static sf::Keyboard::Key getAssociatedKey(std::string const& name) {
