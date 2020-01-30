@@ -37,22 +37,19 @@ void Chip8::launch(std::string const& configFilename) {
         
         if (1.f / executionTimer.getElapsedTime().asSeconds() <= m_frequency) {
             update();
-            
-//            std::cout << "fps: " << 1.f / executionTimer.getElapsedTime().asSeconds() << std::endl;
             executionTimer.restart();
         }
         
         if (1.f / displayTimer.getElapsedTime().asSeconds() <= m_fps) {
             gameWindow.clear(sf::Color::Black);
             
-            auto texture {display()};
             sf::Sprite sprite;
+            auto texture {display()};
             sprite.setTexture(texture->getTexture());
             gameWindow.draw(sprite);
             
             gameWindow.display();
             
-//            std::cout << "ips: " << 1.f / displayTimer.getElapsedTime().asSeconds() << std::endl;
             displayTimer.restart();
         }
     }
@@ -67,6 +64,9 @@ void Chip8::init(std::string const& configFilename) {
     
     loadOpcodes();
     loadActions();
+    
+    m_windowWidth = m_screenWidth * 1.4f;
+    m_windowHeight = m_screenHeigth * 1.7f;
     
     m_programCounter = m_memoryBegin;
     m_stackLevel = 0;
@@ -84,8 +84,8 @@ void Chip8::loadConfig(std::string const& configFilename) {
     
     m_configFilename = configFilename;
     
-    m_windowWidth = parser.get<decltype(m_windowWidth)>("window_width").value_or(m_windowWidth);
-    m_windowHeight = parser.get<decltype(m_windowHeight)>("window_height").value_or(m_windowHeight);
+    m_screenWidth = parser.get<decltype(m_windowWidth)>("screen_width").value_or(m_screenWidth);
+    m_screenHeigth = parser.get<decltype(m_windowHeight)>("screen_height").value_or(m_screenHeigth);
     
     loadInputsKeys(parser);
     
@@ -438,9 +438,42 @@ void Chip8::update() {
 }
 
 std::unique_ptr<sf::RenderTexture> Chip8::display() {
+    auto texture {std::make_unique<sf::RenderTexture>()};
+    texture->create(m_windowWidth, m_windowHeight);
+    texture->clear(sf::Color::Red);
     
-    const float pixelWidth = static_cast<float>(m_windowWidth) / m_width;
-    const float pixelHeight = static_cast<float>(m_windowHeight) / m_height;
+    sf::Sprite screenSprite {};
+    auto screenTexture {displayScreen()};
+    screenSprite.setTexture(screenTexture->getTexture());
+    screenSprite.setPosition(0.f, 0.f);
+    texture->draw(screenSprite);
+    
+    sf::Sprite opcodesSprite {};
+    auto opcodesTexture {displayOpcodes()};
+    opcodesSprite.setTexture(opcodesTexture->getTexture());
+    opcodesSprite.setPosition(m_screenWidth, 0.f);
+    texture->draw(opcodesSprite);
+    
+    sf::Sprite memorySprite {};
+    auto memoryTexture {displayMemory()};
+    memorySprite.setTexture(memoryTexture->getTexture());
+    memorySprite.setPosition(m_screenWidth, m_screenHeigth);
+    texture->draw(memorySprite);
+    
+    sf::Sprite debugSprite {};
+    auto debugTexture {displayDebugInfos()};
+    debugSprite.setTexture(debugTexture->getTexture());
+    debugSprite.setPosition(0.f, m_screenHeigth);
+    texture->draw(debugSprite);
+    
+    texture->display();
+    
+    return texture;
+}
+
+std::unique_ptr<sf::RenderTexture> Chip8::displayScreen() {
+    const float pixelWidth = static_cast<float>(m_screenWidth) / m_width;
+    const float pixelHeight = static_cast<float>(m_screenHeigth) / m_height;
     
     const int textureWidth = m_width * pixelWidth;
     const int textureHeight = m_height * pixelHeight;
@@ -463,6 +496,49 @@ std::unique_ptr<sf::RenderTexture> Chip8::display() {
     return texture;
 }
 
+std::unique_ptr<sf::RenderTexture> Chip8::displayOpcodes() {
+    auto texture {std::make_unique<sf::RenderTexture>()};
+    texture->create(m_screenWidth * 0.4f, m_screenHeigth);
+    texture->clear(sf::Color::Blue);
+    
+    std::ostringstream stream;
+    int nbRows = 19;
+    
+    for (int delta = -3; delta < nbRows - 3; ++delta) {
+        stream << std::hex << static_cast<int>(m_programCounter + delta);
+        stream << " ";
+        stream << std::hex << static_cast<int>(m_memory[m_programCounter + delta]);
+        if (delta != nbRows - 4)
+            stream << "\n";
+    }
+    
+    sf::Text text(stream.str(), m_defaultFont);
+    text.setCharacterSize(m_screenHeigth * 0.98f / nbRows);
+    text.setStyle(sf::Text::Bold);
+    text.setFillColor(sf::Color::White);
+    text.setPosition(20.f, 0.f);
+    texture->draw(text);
+    
+    texture->display();
+    return texture;
+}
+
+std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
+    auto texture {std::make_unique<sf::RenderTexture>()};
+    texture->create(m_screenWidth * 0.4f, m_screenHeigth * 0.7f);
+    texture->clear(sf::Color::Red);
+    texture->display();
+    return texture;
+}
+
+std::unique_ptr<sf::RenderTexture> Chip8::displayDebugInfos() {
+    auto texture {std::make_unique<sf::RenderTexture>()};
+    texture->create(m_screenWidth, m_screenHeigth * 0.7f);
+    texture->clear(sf::Color::Green);
+    texture->display();
+    return texture;
+}
+
 std::uint16_t Chip8::getCurrentOpcode() {
     return ((m_memory[m_programCounter] << 8) + m_memory[m_programCounter + 1]);
 }
@@ -474,11 +550,6 @@ std::uint8_t Chip8::getActionFromOpcode(std::uint16_t opcode) {
             return i;
     }
     return 0;
-}
-
-void printBinairy(std::uint8_t number) {
-    std::bitset<8> n(number);
-    std::cout << n << " ";
 }
 
 void Chip8::computeAction(std::uint8_t actionId, std::uint16_t opcode) {

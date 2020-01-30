@@ -56,7 +56,12 @@ private:
     void handleKey(sf::Keyboard::Key key, bool keyPressed);
     
     void update();
+    
     std::unique_ptr<sf::RenderTexture> display();
+    std::unique_ptr<sf::RenderTexture> displayScreen();
+    std::unique_ptr<sf::RenderTexture> displayOpcodes();
+    std::unique_ptr<sf::RenderTexture> displayMemory();
+    std::unique_ptr<sf::RenderTexture> displayDebugInfos();
     
     std::uint16_t getCurrentOpcode();
     std::uint8_t getActionFromOpcode(std::uint16_t opcode);
@@ -74,8 +79,10 @@ private:
     std::size_t m_memoryBegin = 512;
     std::size_t m_maxStackSize = 15;
     
-    unsigned int m_windowWidth = 1400;
-    unsigned int m_windowHeight = 800;
+    unsigned int m_windowWidth;
+    unsigned int m_windowHeight;
+    unsigned int m_screenWidth = 1600;
+    unsigned int m_screenHeigth = 800;
     std::size_t m_width = 64;
     std::size_t m_height = 32;
     
