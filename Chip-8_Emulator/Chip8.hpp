@@ -97,7 +97,7 @@ private:
     
     std::array<std::uint8_t, 16> m_registers;
     
-    std::array<sf::Keyboard::Key, 16> m_controlKeys;
+    std::array<sf::Keyboard::Key, 18> m_controlKeys;
     std::array<bool, 16> m_keyPressed;
     
     std::vector<bool> m_pixels;
@@ -108,6 +108,8 @@ private:
     
     std::uint8_t m_gameCounter;
     std::uint8_t m_soundCounter;
+    
+    bool m_isPaused = false;
     
     struct OpcodeIdentifier {
         std::uint16_t mask;

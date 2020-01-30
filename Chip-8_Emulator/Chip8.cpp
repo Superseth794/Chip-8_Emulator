@@ -32,7 +32,7 @@ void Chip8::launch(std::string const& configFilename) {
             
         }
         
-        if (1.f / m_executionTimer.getElapsedTime().asSeconds() <= m_frequency) {
+        if (1.f / m_executionTimer.getElapsedTime().asSeconds() <= m_frequency && !m_isPaused) {
             update();
             m_executionTimer.restart();
         }
@@ -395,10 +395,10 @@ void Chip8::loadActions() {
 }
 
 void Chip8::loadInputsKeys(Parser & parser) {
-    std::array<std::string, 16> keyNames {"key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7", "key_8", "key_9", "key_A", "key_0", "key_B", "key_C", "key_D", "key_E", "key_F"};
-    std::array<std::string, 16> defaultKeys {"A", "Z", "E", "Q", "S", "D", "W", "X", "C", "U", "I", "O", "R", "F", "V", "P"};
+    std::array<std::string, 18> keyNames {"key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7", "key_8", "key_9", "key_A", "key_0", "key_B", "key_C", "key_D", "key_E", "key_F", "pause_key", "reload_key"};
+    std::array<std::string, 18> defaultKeys {"A", "Z", "E", "Q", "S", "D", "W", "X", "C", "U", "I", "O", "R", "F", "V", "P", "Enter", "Delete"};
     
-    for (int keyId = 0; keyId < 16; ++keyId) {
+    for (int keyId = 0; keyId < 18; ++keyId) {
         m_controlKeys[keyId] = ExtendedInputs::getAssociatedKey(parser.get<std::string>(keyNames[keyId]).value_or(defaultKeys[keyId]));
         if (m_controlKeys[keyId] == sf::Keyboard::Unknown) {
             std::cout << "Error: could not get key for identifier " << keyNames[keyId] << " --> default key " << defaultKeys[keyId] << " selected" << std::endl;
@@ -411,6 +411,10 @@ void Chip8::handleKey(sf::Keyboard::Key key, bool keyPressed) {
     for (int keyId = 0; keyId < 16; ++keyId) {
         if (m_controlKeys[keyId] == key)
             m_keyPressed[keyId] = keyPressed;
+    }
+    
+    if (key == m_controlKeys[16] && keyPressed) { // Handles pause
+        m_isPaused = !m_isPaused;
     }
 }
 
@@ -569,6 +573,11 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayDebugInfos() {
     stream << "\n";
     
     stream << "fps:   " << 1.f / m_displayTimer.getElapsedTime().asSeconds() << "\n";
+    
+    stream << "\n";
+    
+    stream << "Pause  key:   " << ExtendedInputs::getKeyName(m_controlKeys[16]) << "\n";
+    stream << "Reload key:   " << ExtendedInputs::getKeyName(m_controlKeys[17]) << "\n";
     
     sf::Text text(stream.str(), m_defaultFont);
     text.setCharacterSize(30);
