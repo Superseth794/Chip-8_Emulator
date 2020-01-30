@@ -87,6 +87,8 @@ void Chip8::loadConfig(std::string const& configFilename) {
     m_windowWidth = parser.get<decltype(m_windowWidth)>("window_width").value_or(m_windowWidth);
     m_windowHeight = parser.get<decltype(m_windowHeight)>("window_height").value_or(m_windowHeight);
     
+    loadInputsKeys(parser);
+    
     m_frequency = parser.get<decltype(m_frequency)>("update_frequency").value_or(m_frequency);
     m_fps = parser.get<decltype(m_fps)>("framerate").value_or(m_fps);
     
@@ -395,75 +397,29 @@ void Chip8::loadActions() {
     };
 }
 
+void Chip8::loadInputsKeys(Parser & parser) {
+    m_controlKeys[0] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_1").value_or("A"));
+    m_controlKeys[1] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_2").value_or("Z"));
+    m_controlKeys[2] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_3").value_or("E"));
+    m_controlKeys[3] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_4").value_or("Q"));
+    m_controlKeys[4] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_5").value_or("S"));
+    m_controlKeys[5] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_6").value_or("D"));
+    m_controlKeys[6] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_7").value_or("W"));
+    m_controlKeys[7] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_8").value_or("X"));
+    m_controlKeys[8] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_9").value_or("C"));
+    m_controlKeys[9] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_A").value_or("U"));
+    m_controlKeys[10] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_0").value_or("I"));
+    m_controlKeys[11] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_B").value_or("O"));
+    m_controlKeys[12] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_C").value_or("R"));
+    m_controlKeys[13] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_D").value_or("F"));
+    m_controlKeys[14] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_E").value_or("V"));
+    m_controlKeys[15] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_F").value_or("P"));
+}
+
 void Chip8::handleKey(sf::Keyboard::Key key, bool keyPressed) {
-    switch (key) {
-        case sf::Keyboard::A:
-            m_keyPressed[0] = keyPressed;
-            break;
-            
-        case sf::Keyboard::Z:
-            m_keyPressed[1] = keyPressed;
-        break;
-            
-        case sf::Keyboard::E:
-            m_keyPressed[2] = keyPressed;
-        break;
-            
-        case sf::Keyboard::R:
-            m_keyPressed[3] = keyPressed;
-        break;
-            
-        case sf::Keyboard::Q:
-            m_keyPressed[4] = keyPressed;
-        break;
-            
-        case sf::Keyboard::S:
-            m_keyPressed[5] = keyPressed;
-        break;
-            
-        case sf::Keyboard::D:
-            m_keyPressed[6] = keyPressed;
-        break;
-            
-        case sf::Keyboard::F:
-            m_keyPressed[7] = keyPressed;
-        break;
-            
-        case sf::Keyboard::W:
-            m_keyPressed[8] = keyPressed;
-        break;
-            
-        case sf::Keyboard::X:
-            m_keyPressed[9] = keyPressed;
-        break;
-            
-        case sf::Keyboard::C:
-            m_keyPressed[10] = keyPressed;
-        break;
-            
-        case sf::Keyboard::V:
-            m_keyPressed[11] = keyPressed;
-        break;
-            
-        case sf::Keyboard::U:
-            m_keyPressed[12] = keyPressed;
-        break;
-            
-        case sf::Keyboard::I:
-            m_keyPressed[13] = keyPressed;
-        break;
-            
-        case sf::Keyboard::O:
-            m_keyPressed[14] = keyPressed;
-        break;
-            
-        case sf::Keyboard::P:
-            m_keyPressed[15] = keyPressed;
-        break;
-            
-        default:
-            // Key event is not handled by Chip8
-            break;
+    for (int keyId = 0; keyId < 16; ++keyId) {
+        if (m_controlKeys[keyId] == key)
+            m_keyPressed[keyId] = keyPressed;
     }
 }
 

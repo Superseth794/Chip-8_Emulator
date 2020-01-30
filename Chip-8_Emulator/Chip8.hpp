@@ -26,6 +26,7 @@
 # include "ExternalLibrairies/TSL/hopscotch_map.h"
 
 # include "Parser.hpp"
+# include "InputNames.hpp"
 
 namespace chp {
 
@@ -42,11 +43,15 @@ public:
     
 private:
     void init(std::string const& configFilename);
+    
     void loadConfig(std::string const& configFilename);
     void loadFont();
     bool loadFile(std::string fileName);
+    
     void loadOpcodes();
     void loadActions();
+    
+    void loadInputsKeys(Parser & parser);
     
     void handleKey(sf::Keyboard::Key key, bool keyPressed);
     
@@ -81,6 +86,8 @@ private:
     std::vector<std::uint16_t> m_stack;
     
     std::array<std::uint8_t, 16> m_registers;
+    
+    std::array<sf::Keyboard::Key, 16> m_controlKeys;
     std::array<bool, 16> m_keyPressed;
     
     std::vector<bool> m_pixels;
