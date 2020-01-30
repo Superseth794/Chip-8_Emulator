@@ -1,9 +1,9 @@
 
 # Emulator window
 
-window_width: 1400
+screen_width: 1600
 
-window_height: 800
+screen_height: 800
 
 
 # controls
@@ -16,7 +16,7 @@ key_5: S
 key_6: D
 key_7: W
 key_8: X
-key_9: C
+key_9: Space
 key_A: U
 key_0: I
 key_B: O
@@ -50,7 +50,7 @@ show_ips: true
 
 show_opcodes: false
 
-show_registers: false
+show_memory: false
 
 pause_key: ENTER
 
