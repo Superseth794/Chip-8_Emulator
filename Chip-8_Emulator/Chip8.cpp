@@ -398,22 +398,16 @@ void Chip8::loadActions() {
 }
 
 void Chip8::loadInputsKeys(Parser & parser) {
-    m_controlKeys[0] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_1").value_or("A"));
-    m_controlKeys[1] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_2").value_or("Z"));
-    m_controlKeys[2] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_3").value_or("E"));
-    m_controlKeys[3] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_4").value_or("Q"));
-    m_controlKeys[4] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_5").value_or("S"));
-    m_controlKeys[5] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_6").value_or("D"));
-    m_controlKeys[6] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_7").value_or("W"));
-    m_controlKeys[7] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_8").value_or("X"));
-    m_controlKeys[8] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_9").value_or("C"));
-    m_controlKeys[9] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_A").value_or("U"));
-    m_controlKeys[10] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_0").value_or("I"));
-    m_controlKeys[11] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_B").value_or("O"));
-    m_controlKeys[12] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_C").value_or("R"));
-    m_controlKeys[13] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_D").value_or("F"));
-    m_controlKeys[14] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_E").value_or("V"));
-    m_controlKeys[15] = ExtendedInputs::getAssociatedKey(parser.get<std::string>("key_F").value_or("P"));
+    std::array<std::string, 16> keyNames {"key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7", "key_8", "key_9", "key_A", "key_0", "key_B", "key_C", "key_D", "key_E", "key_F"};
+    std::array<std::string, 16> defaultKeys {"A", "Z", "E", "Q", "S", "D", "W", "X", "C", "U", "I", "O", "R", "F", "V", "P"};
+    
+    for (int keyId = 0; keyId < 16; ++keyId) {
+        m_controlKeys[keyId] = ExtendedInputs::getAssociatedKey(parser.get<std::string>(keyNames[keyId]).value_or(defaultKeys[keyId]));
+        if (m_controlKeys[keyId] == sf::Keyboard::Unknown) {
+            std::cout << "Error: could not get key for identifier " << keyNames[keyId] << " --> default key " << defaultKeys[keyId] << " selected" << std::endl;
+            m_controlKeys[keyId] = ExtendedInputs::getAssociatedKey(defaultKeys[keyId]);
+        }
+    }
 }
 
 void Chip8::handleKey(sf::Keyboard::Key key, bool keyPressed) {
