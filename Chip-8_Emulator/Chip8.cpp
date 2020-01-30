@@ -14,11 +14,8 @@ void Chip8::launch(std::string const& configFilename) {
     
     sf::RenderWindow gameWindow(sf::VideoMode(m_windowWidth, m_windowHeight), "Chip-8");
     
-    sf::Clock executionTimer;
-    executionTimer.restart();
-    
-    sf::Clock displayTimer;
-    displayTimer.restart();
+    m_executionTimer.restart();
+    m_displayTimer.restart();
     
     while (gameWindow.isOpen()) {
         sf::Event event;
@@ -35,12 +32,12 @@ void Chip8::launch(std::string const& configFilename) {
             
         }
         
-        if (1.f / executionTimer.getElapsedTime().asSeconds() <= m_frequency) {
+        if (1.f / m_executionTimer.getElapsedTime().asSeconds() <= m_frequency) {
             update();
-            executionTimer.restart();
+            m_executionTimer.restart();
         }
         
-        if (1.f / displayTimer.getElapsedTime().asSeconds() <= m_fps) {
+        if (1.f / m_displayTimer.getElapsedTime().asSeconds() <= m_fps) {
             gameWindow.clear(sf::Color::Black);
             
             sf::Sprite sprite;
@@ -50,7 +47,7 @@ void Chip8::launch(std::string const& configFilename) {
             
             gameWindow.display();
             
-            displayTimer.restart();
+            m_displayTimer.restart();
         }
     }
 }
@@ -92,9 +89,9 @@ void Chip8::loadConfig(std::string const& configFilename) {
     m_frequency = parser.get<decltype(m_frequency)>("update_frequency").value_or(m_frequency);
     m_fps = parser.get<decltype(m_fps)>("framerate").value_or(m_fps);
     
-    std::string gameFilename {parser.get<decltype(gameFilename)>("file").value_or("Games/Games/PONG.ch8")};
-    std::string soundFilename {parser.get<decltype(soundFilename)>("sound").value_or("Resources/Sounds/sfx_sounds_high2.wav")};
-    std::string fontFilename {parser.get<decltype(fontFilename)>("font").value_or("Resources/Fonts/ArcadeClassic/ARCADECLASSIC.TTF")};
+    m_gameFilename = parser.get<decltype(m_gameFilename)>("file").value_or(m_gameFilename);
+    m_soundFilename  = parser.get<decltype(m_soundFilename)>("sound").value_or(m_soundFilename);
+    m_fontFilename  = parser.get<decltype(m_fontFilename)>("font").value_or(m_fontFilename);
     
     m_memorySize = parser.get<decltype(m_memorySize)>("memory_size").value_or(m_memorySize);
     m_memoryBegin = parser.get<decltype(m_memoryBegin)>("memory_start").value_or(m_memoryBegin);
@@ -110,12 +107,12 @@ void Chip8::loadConfig(std::string const& configFilename) {
     m_width = parser.get<decltype(m_width)>("width_resolution").value_or(m_width);
     m_height = parser.get<decltype(m_height)>("height_resolution").value_or(m_height);
     
-    if (!loadFile(gameFilename))
-        throw std::runtime_error("Error: could not load game from file " + gameFilename);
-    if (!m_defaultSound.openFromFile(soundFilename))
-        throw std::runtime_error("Error: could not load sound from file " + soundFilename);
-    if (!m_defaultFont.loadFromFile(fontFilename))
-    throw std::runtime_error("Error: could not load font from file " + fontFilename);
+    if (!loadFile(m_gameFilename))
+        throw std::runtime_error("Error: could not load game from file " + m_gameFilename);
+    if (!m_defaultSound.openFromFile(m_soundFilename))
+        throw std::runtime_error("Error: could not load sound from file " + m_soundFilename);
+    if (!m_defaultFont.loadFromFile(m_fontFilename))
+    throw std::runtime_error("Error: could not load font from file " + m_fontFilename);
     
     std::cout << "Succesfully loaded " << m_configFilename << std::endl;
 }
@@ -497,26 +494,41 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayScreen() {
 }
 
 std::unique_ptr<sf::RenderTexture> Chip8::displayOpcodes() {
+    float subViewWidth = m_screenWidth * 0.4f;
+    float subViewHeight = m_screenHeigth;
+    
     auto texture {std::make_unique<sf::RenderTexture>()};
-    texture->create(m_screenWidth * 0.4f, m_screenHeigth);
-    texture->clear(sf::Color::Blue);
+    texture->create(subViewWidth, subViewHeight);
+    texture->clear(sf::Color(61, 75, 105));
     
     std::ostringstream stream;
+    
     int nbRows = 19;
+    unsigned int characterSize = static_cast<unsigned int>(m_screenHeigth * 0.98f / nbRows);
+    unsigned int outlineThickness = 6;
     
     for (int delta = -3; delta < nbRows - 3; ++delta) {
         stream << std::hex << static_cast<int>(m_programCounter + delta);
-        stream << " ";
+        stream << "   ";
         stream << std::hex << static_cast<int>(m_memory[m_programCounter + delta]);
         if (delta != nbRows - 4)
             stream << "\n";
     }
     
     sf::Text text(stream.str(), m_defaultFont);
-    text.setCharacterSize(m_screenHeigth * 0.98f / nbRows);
+    text.setCharacterSize(characterSize);
     text.setStyle(sf::Text::Bold);
     text.setFillColor(sf::Color::White);
     text.setPosition(20.f, 0.f);
+    
+    sf::RectangleShape highlightShape {};
+    highlightShape.setSize(sf::Vector2f(subViewWidth - outlineThickness * 2, characterSize - outlineThickness * 2));
+    highlightShape.setFillColor(sf::Color::Red);
+    highlightShape.setOutlineColor(sf::Color(255, 128, 0));
+    highlightShape.setOutlineThickness(outlineThickness);
+    highlightShape.setPosition(outlineThickness, characterSize * 3.35f);
+    texture->draw(highlightShape);
+    
     texture->draw(text);
     
     texture->display();
@@ -524,17 +536,48 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayOpcodes() {
 }
 
 std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
+    float subViewWidth = m_screenWidth * 0.4f;
+    float subViewHeight = m_screenHeigth * 0.7f;
+    
     auto texture {std::make_unique<sf::RenderTexture>()};
-    texture->create(m_screenWidth * 0.4f, m_screenHeigth * 0.7f);
-    texture->clear(sf::Color::Red);
+    texture->create(subViewWidth, subViewHeight);
+    texture->clear(sf::Color(38, 52, 82));
+    
+    
+    
     texture->display();
     return texture;
 }
 
 std::unique_ptr<sf::RenderTexture> Chip8::displayDebugInfos() {
+    float subViewWidth = m_screenWidth;
+    float subViewHeight = m_screenHeigth * 0.7f;
+    
     auto texture {std::make_unique<sf::RenderTexture>()};
-    texture->create(m_screenWidth, m_screenHeigth * 0.7f);
-    texture->clear(sf::Color::Green);
+    texture->create(subViewWidth, subViewHeight);
+    texture->clear(sf::Color(59, 81, 128));
+    
+    std::ostringstream stream;
+    
+    stream << "Chip 8" << "\n\n";
+    
+    stream << "Config  file:    " << m_configFilename << "\n";
+    stream << "Game    file:    " << m_gameFilename << "\n";
+    stream << "Sound   file:    " << m_soundFilename << "\n";
+    stream << "Font    file:    " << m_fontFilename << "\n";
+    
+    stream << "\n";
+    
+    stream << "fps:   " << 1.f / m_displayTimer.getElapsedTime().asSeconds() << "\n";
+    
+    sf::Text text(stream.str(), m_defaultFont);
+    text.setCharacterSize(30);
+    text.setStyle(sf::Text::Bold);
+    text.setFillColor(sf::Color::White);
+    text.setPosition(5.f, 0.f);
+    
+    texture->draw(text);
+    
     texture->display();
     return texture;
 }

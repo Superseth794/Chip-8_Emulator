@@ -74,6 +74,9 @@ private:
     static constexpr std::size_t NB_OPCODES_AVAILABLES = 35;
     
     std::string m_configFilename;
+    std::string m_gameFilename = "Games/Games/PONG.ch8";
+    std::string m_soundFilename = "Resources/Sounds/sfx_sounds_high2.wav";
+    std::string m_fontFilename = "Resources/Fonts/ArcadeClassic/ARCADECLASSIC.TTF";
     
     std::size_t m_memorySize = 4096;
     std::size_t m_memoryBegin = 512;
@@ -116,6 +119,9 @@ private:
     
     sf::Music m_defaultSound;
     sf::Font m_defaultFont;
+    
+    sf::Clock m_executionTimer;
+    sf::Clock m_displayTimer;
     
 };
 
