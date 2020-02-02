@@ -75,6 +75,8 @@ void Chip8::init(std::string const& configFilename) {
     
     m_doSingleJump = false;
     
+    m_opcodesDisplayBegining = 0;
+    
     std::fill(m_keyPressed.begin(), m_keyPressed.end(), false);
 }
 
@@ -520,11 +522,15 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayOpcodes() {
     unsigned int characterSize = static_cast<unsigned int>(m_screenHeigth * 0.98f / nbRows);
     unsigned int outlineThickness = 6;
     
-    for (int delta = -3; delta < nbRows - 3; ++delta) {
-        stream << std::hex << static_cast<int>(m_programCounter + delta);
+    if (std::abs(m_opcodesDisplayBegining - m_programCounter) > nbRows) {
+        m_opcodesDisplayBegining = m_programCounter - 3;
+    }
+    
+    for (int opcodeId = m_opcodesDisplayBegining; opcodeId < m_opcodesDisplayBegining + nbRows; ++ opcodeId) {
+        stream << std::hex << static_cast<int>(opcodeId);
         stream << "   ";
-        stream << std::hex << static_cast<int>(m_memory[m_programCounter + delta]);
-        if (delta != nbRows - 4)
+        stream << std::hex << static_cast<int>(m_memory[opcodeId]);
+        if (opcodeId != m_opcodesDisplayBegining + nbRows)
             stream << "\n";
     }
     
@@ -539,8 +545,10 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayOpcodes() {
     highlightShape.setFillColor(sf::Color::Red);
     highlightShape.setOutlineColor(sf::Color(255, 128, 0));
     highlightShape.setOutlineThickness(outlineThickness);
-    highlightShape.setPosition(outlineThickness, characterSize * 3.35f);
+    highlightShape.setPosition(outlineThickness, characterSize * (m_programCounter - m_opcodesDisplayBegining + 0.35f));
     texture->draw(highlightShape);
+    
+    std::cout << std::hex << static_cast<int>(m_programCounter) << std::endl;
     
     texture->draw(text);
     

@@ -113,6 +113,8 @@ private:
     bool m_isPaused = false;
     bool m_doSingleJump = false;
     
+    std::uint16_t m_opcodesDisplayBegining;
+    
     struct OpcodeIdentifier {
         std::uint16_t mask;
         std::uint16_t identifier;
