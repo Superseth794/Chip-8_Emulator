@@ -52,9 +52,11 @@ show_opcodes: false
 
 show_memory: false
 
-pause_key: ENTER
+pause_key: Enter
 
-reload_key: ERASE
+reload_key: Escape
+
+jump_key: Tab
 
 
 # Advanced (highly recomended settings)

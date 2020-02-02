@@ -26,15 +26,17 @@ void Chip8::launch(std::string const& configFilename) {
                 gameWindow.close();
             } else if (event.type == event.KeyPressed) {
                 handleKey(event.key.code, true);
+                std::cout << ExtendedInputs::getKeyName(event.key.code) << std::endl;
             } else if (event.type == event.KeyReleased) {
                 handleKey(event.key.code, false);
             }
             
         }
         
-        if (1.f / m_executionTimer.getElapsedTime().asSeconds() <= m_frequency && !m_isPaused) {
+        if (1.f / m_executionTimer.getElapsedTime().asSeconds() <= m_frequency && (!m_isPaused || m_doSingleJump)) {
             update();
             m_executionTimer.restart();
+            m_doSingleJump = false;
         }
         
         if (1.f / m_displayTimer.getElapsedTime().asSeconds() <= m_fps) {
@@ -70,6 +72,8 @@ void Chip8::init(std::string const& configFilename) {
     m_gameCounter = 0;
     m_soundCounter = 0;
     m_registerAdress = 0;
+    
+    m_doSingleJump = false;
     
     std::fill(m_keyPressed.begin(), m_keyPressed.end(), false);
 }
@@ -395,10 +399,10 @@ void Chip8::loadActions() {
 }
 
 void Chip8::loadInputsKeys(Parser & parser) {
-    std::array<std::string, 18> keyNames {"key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7", "key_8", "key_9", "key_A", "key_0", "key_B", "key_C", "key_D", "key_E", "key_F", "pause_key", "reload_key"};
-    std::array<std::string, 18> defaultKeys {"A", "Z", "E", "Q", "S", "D", "W", "X", "C", "U", "I", "O", "R", "F", "V", "P", "Enter", "Delete"};
+    std::array<std::string, NB_CONTROLS_AVAILABLES> keyNames {"key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7", "key_8", "key_9", "key_A", "key_0", "key_B", "key_C", "key_D", "key_E", "key_F", "pause_key", "reload_key", "jump_key"};
+    std::array<std::string, NB_CONTROLS_AVAILABLES> defaultKeys {"A", "Z", "E", "Q", "S", "D", "W", "X", "C", "U", "I", "O", "R", "F", "V", "P", "Enter", "Delete", "Tab"};
     
-    for (int keyId = 0; keyId < 18; ++keyId) {
+    for (int keyId = 0; keyId < NB_CONTROLS_AVAILABLES; ++keyId) {
         m_controlKeys[keyId] = ExtendedInputs::getAssociatedKey(parser.get<std::string>(keyNames[keyId]).value_or(defaultKeys[keyId]));
         if (m_controlKeys[keyId] == sf::Keyboard::Unknown) {
             std::cout << "Error: could not get key for identifier " << keyNames[keyId] << " --> default key " << defaultKeys[keyId] << " selected" << std::endl;
@@ -417,6 +421,9 @@ void Chip8::handleKey(sf::Keyboard::Key key, bool keyPressed) {
         m_isPaused = !m_isPaused;
     } else if (key == m_controlKeys[17] && keyPressed) { // Handles reload
         init(m_configFilename);
+    } else if (key == m_controlKeys[18]) {
+        if (keyPressed && m_isPaused)
+            m_doSingleJump = true;
     }
 }
 
@@ -580,6 +587,7 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayDebugInfos() {
     
     stream << "Pause  key:   " << ExtendedInputs::getKeyName(m_controlKeys[16]) << "\n";
     stream << "Reload key:   " << ExtendedInputs::getKeyName(m_controlKeys[17]) << "\n";
+    stream << "Jump   key:   " << ExtendedInputs::getKeyName(m_controlKeys[18]) << "\n";
     
     sf::Text text(stream.str(), m_defaultFont);
     text.setCharacterSize(30);

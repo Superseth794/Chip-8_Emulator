@@ -72,6 +72,7 @@ private:
     
 private:
     static constexpr std::size_t NB_OPCODES_AVAILABLES = 35;
+    static constexpr std::size_t NB_CONTROLS_AVAILABLES = 19;
     
     std::string m_configFilename;
     std::string m_gameFilename = "Games/Games/PONG.ch8";
@@ -97,7 +98,7 @@ private:
     
     std::array<std::uint8_t, 16> m_registers;
     
-    std::array<sf::Keyboard::Key, 18> m_controlKeys;
+    std::array<sf::Keyboard::Key, NB_CONTROLS_AVAILABLES> m_controlKeys;
     std::array<bool, 16> m_keyPressed;
     
     std::vector<bool> m_pixels;
@@ -110,6 +111,7 @@ private:
     std::uint8_t m_soundCounter;
     
     bool m_isPaused = false;
+    bool m_doSingleJump = false;
     
     struct OpcodeIdentifier {
         std::uint16_t mask;
