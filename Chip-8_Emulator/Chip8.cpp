@@ -548,8 +548,6 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayOpcodes() {
     highlightShape.setPosition(outlineThickness, characterSize * (m_programCounter - m_opcodesDisplayBegining + 0.35f));
     texture->draw(highlightShape);
     
-    std::cout << std::hex << static_cast<int>(m_programCounter) << std::endl;
-    
     texture->draw(text);
     
     texture->display();
@@ -564,7 +562,63 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
     texture->create(subViewWidth, subViewHeight);
     texture->clear(sf::Color(38, 52, 82));
     
+    const float characterSize {subViewHeight / 16.f};
     
+    std::stringstream stream;
+    
+    for (int registerId = 0; registerId < 16; ++registerId) {
+        stream << "V" << std::hex << registerId << "  =  #";
+        if (m_registers[registerId] < 16) {
+            stream << "0";
+        }
+        stream << static_cast<int>(m_registers[registerId]) << "\t\t\t\t\t\t\t\t\t\t\t\t";
+        
+        int value = -1;
+        int zeroRefValue = -1;
+        
+        if (registerId == 0) {
+            stream << "GC";
+            value = m_gameCounter;
+            zeroRefValue = 16;
+        } else if (registerId == 1) {
+            stream << "SC";
+            value = m_soundCounter;
+            zeroRefValue = 16;
+        } else if (registerId == 3) {
+            stream << "I ";
+            value = m_registerAdress;
+            zeroRefValue = 4096;
+        } else if (registerId == 5) {
+            stream << "PC";
+            value = m_programCounter;
+            zeroRefValue = 4096;
+        } else if (registerId == 6) {
+            stream << "SL";
+            value = m_stackLevel;
+            zeroRefValue = 16;
+        } else if (registerId >= 8) {
+            // TODO
+        }
+        
+        if (value != -1) {
+            stream << "  =  #";
+            if (value < zeroRefValue)
+                stream << "0";
+            stream << std::hex << value;
+        }
+        
+        stream << "\n";
+    }
+    
+    sf::Text text;
+    text.setFont(m_defaultFont);
+    text.setCharacterSize(characterSize);
+    text.setStyle(sf::Text::Bold);
+    text.setFillColor(sf::Color::White);
+    text.setPosition(20.f, 0.f);
+    text.setString(stream.str());
+    
+    texture->draw(text);
     
     texture->display();
     return texture;
@@ -598,7 +652,7 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayDebugInfos() {
     stream << "Jump   key:   " << ExtendedInputs::getKeyName(m_controlKeys[18]) << "\n";
     
     sf::Text text(stream.str(), m_defaultFont);
-    text.setCharacterSize(30);
+    text.setCharacterSize(30); // TODO adaptative text size
     text.setStyle(sf::Text::Bold);
     text.setFillColor(sf::Color::White);
     text.setPosition(5.f, 0.f);
