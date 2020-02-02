@@ -415,6 +415,8 @@ void Chip8::handleKey(sf::Keyboard::Key key, bool keyPressed) {
     
     if (key == m_controlKeys[16] && keyPressed) { // Handles pause
         m_isPaused = !m_isPaused;
+    } else if (key == m_controlKeys[17] && keyPressed) { // Handles reload
+        init(m_configFilename);
     }
 }
 
@@ -572,7 +574,7 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayDebugInfos() {
     
     stream << "\n";
     
-    stream << "fps:   " << 1.f / m_displayTimer.getElapsedTime().asSeconds() << "\n";
+    stream << "fps:   " << (m_isPaused ? m_fps : 1.f / m_displayTimer.getElapsedTime().asSeconds()) << "\n";
     
     stream << "\n";
     
