@@ -60,7 +60,7 @@ public:
     template <>
     std::optional<bool> get<bool>(std::string const& identifier) {
         std::string subString = std::move(find(identifier));
-
+        
         if (subString == "") {
             std::cout << "Error: could not parse data from identifier: " << identifier << std::endl;
             return std::nullopt;
@@ -78,7 +78,13 @@ public:
              read = stream.get();
         }
         
-        return std::optional<bool>(result == "true");
+        if (result == "true") {
+            return std::optional<bool>(true);
+        } else if (result == "false") {
+            return std::optional<bool>(false);
+        }
+        
+        return std::nullopt;
     }
     
 private:
