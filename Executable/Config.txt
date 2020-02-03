@@ -28,9 +28,9 @@ key_F: P
 
 # Emulation
 
-update_frequency: 250
+update_frequency: 10000
 
-framerate: 60
+framerate: 6000
 
 
 # resources
@@ -39,7 +39,7 @@ file: Games/Games/AIRPLANE.ch8
 
 sound: Resources/Sounds/sfx_sounds_high2.wav
 
-font: Resources/Fonts/ArcadeClassic/ARCADECLASSIC.TTF
+font: Resources/Fonts/EmulatorFont/Emulator.ttf
 
 
 # Debug

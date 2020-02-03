@@ -118,7 +118,7 @@ void Chip8::loadConfig(std::string const& configFilename) {
     if (!m_defaultSound.openFromFile(m_soundFilename))
         throw std::runtime_error("Error: could not load sound from file " + m_soundFilename);
     if (!m_defaultFont.loadFromFile(m_fontFilename))
-    throw std::runtime_error("Error: could not load font from file " + m_fontFilename);
+        throw std::runtime_error("Error: could not load font from file " + m_fontFilename);
     
     std::cout << "Succesfully loaded " << m_configFilename << std::endl;
 }
@@ -180,41 +180,252 @@ bool Chip8::loadFile(std::string fileName) {
 }
 
 void Chip8::loadOpcodes() {
-    m_opcodeIdentifiers[0].mask = 0x0000; m_opcodeIdentifiers[0].identifier = 0x0FFF;
-    m_opcodeIdentifiers[1].mask = 0xFFFF; m_opcodeIdentifiers[1].identifier = 0x00E0;
-    m_opcodeIdentifiers[2].mask = 0xFFFF; m_opcodeIdentifiers[2].identifier = 0x00EE;
-    m_opcodeIdentifiers[3].mask = 0xF000; m_opcodeIdentifiers[3].identifier = 0x1000;
-    m_opcodeIdentifiers[4].mask = 0xF000; m_opcodeIdentifiers[4].identifier = 0x2000;
-    m_opcodeIdentifiers[5].mask = 0xF000; m_opcodeIdentifiers[5].identifier = 0x3000;
-    m_opcodeIdentifiers[6].mask = 0xF000; m_opcodeIdentifiers[6].identifier = 0x4000;
-    m_opcodeIdentifiers[7].mask = 0xF00F; m_opcodeIdentifiers[7].identifier = 0x5000;
-    m_opcodeIdentifiers[8].mask = 0xF000; m_opcodeIdentifiers[8].identifier = 0x6000;
-    m_opcodeIdentifiers[9].mask = 0xF000; m_opcodeIdentifiers[9].identifier = 0x7000;
-    m_opcodeIdentifiers[10].mask = 0xF00F; m_opcodeIdentifiers[10].identifier = 0x8000;
-    m_opcodeIdentifiers[11].mask = 0xF00F; m_opcodeIdentifiers[11].identifier = 0x8001;
-    m_opcodeIdentifiers[12].mask = 0xF00F; m_opcodeIdentifiers[12].identifier = 0x8002;
-    m_opcodeIdentifiers[13].mask = 0xF00F; m_opcodeIdentifiers[13].identifier = 0x8003;
-    m_opcodeIdentifiers[14].mask = 0xF00F; m_opcodeIdentifiers[14].identifier = 0x8004;
-    m_opcodeIdentifiers[15].mask = 0xF00F; m_opcodeIdentifiers[15].identifier = 0x8005;
-    m_opcodeIdentifiers[16].mask = 0xF00F; m_opcodeIdentifiers[16].identifier = 0x8006;
-    m_opcodeIdentifiers[17].mask = 0xF00F; m_opcodeIdentifiers[17].identifier = 0x8007;
-    m_opcodeIdentifiers[18].mask = 0xF00F; m_opcodeIdentifiers[18].identifier = 0x800E;
-    m_opcodeIdentifiers[19].mask = 0xF00F; m_opcodeIdentifiers[19].identifier = 0x9000;
-    m_opcodeIdentifiers[20].mask = 0xF000; m_opcodeIdentifiers[20].identifier = 0xA000;
-    m_opcodeIdentifiers[21].mask = 0xF000; m_opcodeIdentifiers[21].identifier = 0xB000;
-    m_opcodeIdentifiers[22].mask = 0xF000; m_opcodeIdentifiers[22].identifier = 0xC000;
-    m_opcodeIdentifiers[23].mask = 0xF000; m_opcodeIdentifiers[23].identifier = 0xD000;
-    m_opcodeIdentifiers[24].mask = 0xF0FF; m_opcodeIdentifiers[24].identifier = 0xE09E;
-    m_opcodeIdentifiers[25].mask = 0xF0FF; m_opcodeIdentifiers[25].identifier = 0xE0A1;
-    m_opcodeIdentifiers[26].mask = 0xF0FF; m_opcodeIdentifiers[26].identifier = 0xF007;
-    m_opcodeIdentifiers[27].mask = 0xF0FF; m_opcodeIdentifiers[27].identifier = 0xF00A;
-    m_opcodeIdentifiers[28].mask = 0xF0FF; m_opcodeIdentifiers[28].identifier = 0xF015;
-    m_opcodeIdentifiers[29].mask = 0xF0FF; m_opcodeIdentifiers[29].identifier = 0xF018;
-    m_opcodeIdentifiers[30].mask = 0xF0FF; m_opcodeIdentifiers[30].identifier = 0xF01E;
-    m_opcodeIdentifiers[31].mask = 0xF0FF; m_opcodeIdentifiers[31].identifier = 0xF029;
-    m_opcodeIdentifiers[32].mask = 0xF0FF; m_opcodeIdentifiers[32].identifier = 0xF033;
-    m_opcodeIdentifiers[33].mask = 0xF0FF; m_opcodeIdentifiers[33].identifier = 0xF055;
-    m_opcodeIdentifiers[34].mask = 0xF0FF; m_opcodeIdentifiers[34].identifier = 0xF065;
+    m_opcodeIdentifiers[0] = {
+        "0NNN",
+        0x0000,
+        0x0FFF,
+        "SYS NNN"
+    };
+    m_opcodeIdentifiers[1] = {
+        "00E0",
+        0xFFFF,
+        0x00E0,
+        "CLS"
+    };
+    m_opcodeIdentifiers[2] = {
+        "00EE",
+        0xFFFF,
+        0x00EE,
+        "RET"
+    };
+    m_opcodeIdentifiers[3] = {
+        "1NNN",
+        0xF000,
+        0x1000,
+        "JP NNN"
+    };
+    m_opcodeIdentifiers[4] = {
+        "2NNN",
+        0xF000,
+        0x2000,
+        "CALL NNN"
+    };
+    m_opcodeIdentifiers[5] = {
+        "3XNN",
+        0xF000,
+        0x3000,
+        "SE VX, NN"
+    };
+    m_opcodeIdentifiers[6] = {
+        "4XNN",
+        0xF000,
+        0x4000,
+        "SNE VX, NN"
+    };
+    m_opcodeIdentifiers[7] = {
+        "5XY0",
+        0xF00F,
+        0x5000,
+        "SE VX, VY"
+    };
+    m_opcodeIdentifiers[8] = {
+        "6XNN",
+        0xF000,
+        0x6000,
+        "LD VX, NN"
+    };
+    m_opcodeIdentifiers[9] = {
+        "7XNN",
+        0xF000,
+        0x7000,
+        "ADD VX, NN"
+    };
+    m_opcodeIdentifiers[10] = {
+        "8XY0",
+        0xF00F,
+        0x8000,
+        "LD VX, VY"
+    };
+    m_opcodeIdentifiers[11] = {
+        "8XY1",
+        0xF00F,
+        0x8001,
+        "OR VX, VY"
+    };
+    m_opcodeIdentifiers[12] = {
+        "8XY2",
+        0xF00F,
+        0x8002,
+        "AND VX, VY"
+    };
+    m_opcodeIdentifiers[13] = {
+        "BXY3",
+        0xF00F,
+        0x8003,
+        "XOR VX, VY"
+    };
+    m_opcodeIdentifiers[14] = {
+        "8XY4",
+        0xF00F,
+        0x8004,
+        "ADD VX, VY"
+    };
+    m_opcodeIdentifiers[15] = {
+        "8XY5",
+        0xF00F,
+        0x8005,
+        "SUB VX, VY"
+    };
+    m_opcodeIdentifiers[16] = {
+        "8XY6",
+        0xF00F,
+        0x8006,
+        "SHR VX"
+    };
+    m_opcodeIdentifiers[17] = {
+        "8XY7",
+        0xF00F,
+        0x8007,
+        "SUBN VX, VY"
+    };
+    m_opcodeIdentifiers[18] = {
+        "8XYE",
+        0xF00F,
+        0x800E,
+        "SHL VX"
+    };
+    m_opcodeIdentifiers[19] = {
+        "9XY0",
+        0xF00F,
+        0x9000,
+        "SNE VX, VY"
+    };
+    m_opcodeIdentifiers[20] = {
+        "ANNN",
+        0xF000,
+        0xA000,
+        "LD I, NNN"
+    };
+    m_opcodeIdentifiers[21] = {
+        "BNNN",
+        0xF000,
+        0xB000,
+        "JP V0, NNN"
+    };
+    m_opcodeIdentifiers[22] = {
+        "CXNN",
+        0xF000,
+        0xC000,
+        "RND VX, NN"
+    };
+    m_opcodeIdentifiers[23] = {
+        "DXYN",
+        0xF000,
+        0xD000,
+        "DRW VX, VY, N"
+    };
+    m_opcodeIdentifiers[24] = {
+        "EX9E",
+        0xF0FF,
+        0xE09E,
+        "SKP VX"
+    };
+    m_opcodeIdentifiers[25] = {
+        "EXA1",
+        0xF0FF,
+        0xE0A1,
+        "SKNP VX"
+    };
+    m_opcodeIdentifiers[26] = {
+        "FX07",
+        0xF0FF,
+        0xF007,
+        "LD VX, DT"
+    };
+    m_opcodeIdentifiers[27] = {
+        "FX0A",
+        0xF0FF,
+        0xF00A,
+        "LD VX, K"
+    };
+    m_opcodeIdentifiers[28] = {
+        "FX15",
+        0xF0FF,
+        0xF015,
+        "LD DT, VX"
+    };
+    m_opcodeIdentifiers[29] = {
+        "FX18",
+        0xF0FF,
+        0xF018,
+        "LD ST, VX"
+    };
+    m_opcodeIdentifiers[30] = {
+        "FX1E",
+        0xF0FF,
+        0xF01E,
+        "ADD I, VX"
+    };
+    m_opcodeIdentifiers[31] = {
+        "FX29",
+        0xF0FF,
+        0xF029,
+        "LD F, VX"
+    };
+    m_opcodeIdentifiers[32] = {
+        "FX33",
+        0xF0FF,
+        0xF033,
+        "BCD VX"
+    };
+    m_opcodeIdentifiers[33] = {
+        "FX55",
+        0xF0FF,
+        0xF055,
+        "LD [I], VX"
+    };
+    m_opcodeIdentifiers[34] = {
+        "FX65",
+        0xF0FF,
+        0xF065,
+        "LD VX, [I]"
+    };
+    
+//    m_opcodeIdentifiers[0].mask = 0x0000; m_opcodeIdentifiers[0].identifier = 0x0FFF;
+//    m_opcodeIdentifiers[1].mask = 0xFFFF; m_opcodeIdentifiers[1].identifier = 0x00E0;
+//    m_opcodeIdentifiers[2].mask = 0xFFFF; m_opcodeIdentifiers[2].identifier = 0x00EE;
+//    m_opcodeIdentifiers[3].mask = 0xF000; m_opcodeIdentifiers[3].identifier = 0x1000;
+//    m_opcodeIdentifiers[4].mask = 0xF000; m_opcodeIdentifiers[4].identifier = 0x2000;
+//    m_opcodeIdentifiers[5].mask = 0xF000; m_opcodeIdentifiers[5].identifier = 0x3000;
+//    m_opcodeIdentifiers[6].mask = 0xF000; m_opcodeIdentifiers[6].identifier = 0x4000;
+//    m_opcodeIdentifiers[7].mask = 0xF00F; m_opcodeIdentifiers[7].identifier = 0x5000;
+//    m_opcodeIdentifiers[8].mask = 0xF000; m_opcodeIdentifiers[8].identifier = 0x6000;
+//    m_opcodeIdentifiers[9].mask = 0xF000; m_opcodeIdentifiers[9].identifier = 0x7000;
+//    m_opcodeIdentifiers[10].mask = 0xF00F; m_opcodeIdentifiers[10].identifier = 0x8000;
+//    m_opcodeIdentifiers[11].mask = 0xF00F; m_opcodeIdentifiers[11].identifier = 0x8001;
+//    m_opcodeIdentifiers[12].mask = 0xF00F; m_opcodeIdentifiers[12].identifier = 0x8002;
+//    m_opcodeIdentifiers[13].mask = 0xF00F; m_opcodeIdentifiers[13].identifier = 0x8003;
+//    m_opcodeIdentifiers[14].mask = 0xF00F; m_opcodeIdentifiers[14].identifier = 0x8004;
+//    m_opcodeIdentifiers[15].mask = 0xF00F; m_opcodeIdentifiers[15].identifier = 0x8005;
+//    m_opcodeIdentifiers[16].mask = 0xF00F; m_opcodeIdentifiers[16].identifier = 0x8006;
+//    m_opcodeIdentifiers[17].mask = 0xF00F; m_opcodeIdentifiers[17].identifier = 0x8007;
+//    m_opcodeIdentifiers[18].mask = 0xF00F; m_opcodeIdentifiers[18].identifier = 0x800E;
+//    m_opcodeIdentifiers[19].mask = 0xF00F; m_opcodeIdentifiers[19].identifier = 0x9000;
+//    m_opcodeIdentifiers[20].mask = 0xF000; m_opcodeIdentifiers[20].identifier = 0xA000;
+//    m_opcodeIdentifiers[21].mask = 0xF000; m_opcodeIdentifiers[21].identifier = 0xB000;
+//    m_opcodeIdentifiers[22].mask = 0xF000; m_opcodeIdentifiers[22].identifier = 0xC000;
+//    m_opcodeIdentifiers[23].mask = 0xF000; m_opcodeIdentifiers[23].identifier = 0xD000;
+//    m_opcodeIdentifiers[24].mask = 0xF0FF; m_opcodeIdentifiers[24].identifier = 0xE09E;
+//    m_opcodeIdentifiers[25].mask = 0xF0FF; m_opcodeIdentifiers[25].identifier = 0xE0A1;
+//    m_opcodeIdentifiers[26].mask = 0xF0FF; m_opcodeIdentifiers[26].identifier = 0xF007;
+//    m_opcodeIdentifiers[27].mask = 0xF0FF; m_opcodeIdentifiers[27].identifier = 0xF00A;
+//    m_opcodeIdentifiers[28].mask = 0xF0FF; m_opcodeIdentifiers[28].identifier = 0xF015;
+//    m_opcodeIdentifiers[29].mask = 0xF0FF; m_opcodeIdentifiers[29].identifier = 0xF018;
+//    m_opcodeIdentifiers[30].mask = 0xF0FF; m_opcodeIdentifiers[30].identifier = 0xF01E;
+//    m_opcodeIdentifiers[31].mask = 0xF0FF; m_opcodeIdentifiers[31].identifier = 0xF029;
+//    m_opcodeIdentifiers[32].mask = 0xF0FF; m_opcodeIdentifiers[32].identifier = 0xF033;
+//    m_opcodeIdentifiers[33].mask = 0xF0FF; m_opcodeIdentifiers[33].identifier = 0xF055;
+//    m_opcodeIdentifiers[34].mask = 0xF0FF; m_opcodeIdentifiers[34].identifier = 0xF065;
 }
 
 void Chip8::loadActions() {
@@ -519,33 +730,81 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayOpcodes() {
     std::ostringstream stream;
     
     int nbRows = 19;
-    unsigned int characterSize = static_cast<unsigned int>(m_screenHeigth * 0.98f / nbRows);
+    unsigned int characterSize = static_cast<unsigned int>(m_screenHeigth * 0.98f / (nbRows * 1.5f));
     unsigned int outlineThickness = 6;
+    float lineSpacing = 1.55f * m_screenHeigth / 800.f;
     
-    if (std::abs(m_opcodesDisplayBegining - m_programCounter) > nbRows) {
-        m_opcodesDisplayBegining = m_programCounter - 3;
+    if (m_programCounter < m_opcodesDisplayBegining || m_programCounter - m_opcodesDisplayBegining >= (nbRows - 1) * 2) {
+        m_opcodesDisplayBegining = m_programCounter - 6;
     }
     
-    for (int opcodeId = m_opcodesDisplayBegining; opcodeId < m_opcodesDisplayBegining + nbRows; ++ opcodeId) {
-        stream << std::hex << static_cast<int>(opcodeId);
-        stream << "   ";
-        stream << std::hex << static_cast<int>(m_memory[opcodeId]);
-        if (opcodeId != m_opcodesDisplayBegining + nbRows)
-            stream << "\n";
+    for (int adress = m_opcodesDisplayBegining; adress < m_opcodesDisplayBegining + nbRows * 2; adress += 2) {
+        stream << std::hex << static_cast<int>(adress);
+        stream << " - ";
+        
+        std::uint16_t opcode = getOpcodeAt(adress);
+        int opcodeId = static_cast<int>(getActionFromOpcode(opcode));
+        if (0 <= opcodeId && opcodeId < NB_OPCODES_AVAILABLES) {
+            std::string mnemonnic {m_opcodeIdentifiers[opcodeId].mnemonic};
+            
+            auto delimIt = std::find(mnemonnic.begin(), mnemonnic.end(), ' ');
+            std::string sub = std::string(mnemonnic.begin(), delimIt);
+            stream << sub;
+            
+            for (int delta = 0; delta < 4 - sub.size(); ++delta)
+                stream << " "; // Adds spaces to uniform values manipulated display
+            
+            std::uint8_t b3 = (opcode >> 8) & 0xF, b2 = (opcode >> 4) & 0xF, b1 = opcode & 0xF;
+            
+            std::string toParse = std::string(delimIt, mnemonnic.end());
+            for (int i = 0; i < toParse.size(); ++i) {
+                switch (toParse[i]) {
+                    case 'I':
+                        stream << static_cast<int>(m_registerAdress);
+                        break;
+                    case 'X':
+                        stream << static_cast<int>(b3);
+                        break;
+                    case 'Y':
+                        stream << static_cast<int>(b2);
+                        break;
+                    case 'N':
+                    {
+                        int addr = b3;
+                        if (++i < toParse.size() && toParse[i] == 'N') {
+                            addr = (addr << 4) + b2;
+                            if (++i < toParse.size() && toParse[i] == 'N')
+                            {
+                                addr = (addr << 4) + b1;
+                                ++i;
+                            }
+                        }
+                        --i;
+                        stream << "#" << static_cast<int>(addr);
+                    }
+                        break;
+                    default:
+                        stream << toParse[i];
+                        break;
+                }
+            }
+        }
+        
+        stream << "\n";
     }
     
     sf::Text text(stream.str(), m_defaultFont);
     text.setCharacterSize(characterSize);
-    text.setStyle(sf::Text::Bold);
+    text.setLineSpacing(lineSpacing);
     text.setFillColor(sf::Color::White);
-    text.setPosition(20.f, 0.f);
+    text.setPosition(20.f, 6.f);
     
     sf::RectangleShape highlightShape {};
-    highlightShape.setSize(sf::Vector2f(subViewWidth - outlineThickness * 2, characterSize - outlineThickness * 2));
+    highlightShape.setSize(sf::Vector2f(subViewWidth - outlineThickness * 2, characterSize * 1.5f - outlineThickness * 2));
     highlightShape.setFillColor(sf::Color::Red);
     highlightShape.setOutlineColor(sf::Color(255, 128, 0));
     highlightShape.setOutlineThickness(outlineThickness);
-    highlightShape.setPosition(outlineThickness, characterSize * (m_programCounter - m_opcodesDisplayBegining + 0.35f));
+    highlightShape.setPosition(outlineThickness, subViewHeight / nbRows * ((m_programCounter - m_opcodesDisplayBegining) / 2) + 6.f);
     texture->draw(highlightShape);
     
     texture->draw(text);
@@ -562,22 +821,22 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
     texture->create(subViewWidth, subViewHeight);
     texture->clear(sf::Color(38, 52, 82));
     
-    const float characterSize {subViewHeight / 12.f};
+    const float characterSize {subViewHeight / 20.f};
     
     std::stringstream stream;
     
     for (int registerId = 0; registerId < 11; ++registerId) {
-        stream << "V" << std::hex << registerId << "  =  #";
+        stream << "V" << std::hex << registerId << " = #";
         if (m_registers[registerId] < 16) {
             stream << "0";
         }
-        stream << static_cast<int>(m_registers[registerId]) << "\t\t\t\t\t\t";
+        stream << static_cast<int>(m_registers[registerId]) << "    ";
         
         int value = -1;
         int zeroRefValue = -1;
         
         if (registerId < 4) {
-            stream << "V" << std::hex << registerId + 11 << "  =  #";
+            stream << "V" << std::hex << registerId + 11 << " = #";
             if (m_registers[registerId + 11] < 16) {
                 stream << "0";
             }
@@ -606,7 +865,7 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
         }
         
         if (value != -1) {
-            stream << "  =  #";
+            stream << " = #";
             if (value < zeroRefValue)
                 stream << "0";
             stream << std::hex << value;
@@ -614,56 +873,12 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
         
         stream << "\n";
     }
-    
-//    for (int registerId = 0; registerId < 16; ++registerId) {
-//        stream << "V" << std::hex << registerId << "  =  #";
-//        if (m_registers[registerId] < 16) {
-//            stream << "0";
-//        }
-//        stream << static_cast<int>(m_registers[registerId]) << "\t\t\t\t\t\t\t\t\t\t\t\t";
-//
-//        int value = -1;
-//        int zeroRefValue = -1;
-//
-//        if (registerId == 0) {
-//            stream << "GC";
-//            value = m_gameCounter;
-//            zeroRefValue = 16;
-//        } else if (registerId == 1) {
-//            stream << "SC";
-//            value = m_soundCounter;
-//            zeroRefValue = 16;
-//        } else if (registerId == 3) {
-//            stream << "I ";
-//            value = m_registerAdress;
-//            zeroRefValue = 4096;
-//        } else if (registerId == 5) {
-//            stream << "PC";
-//            value = m_programCounter;
-//            zeroRefValue = 4096;
-//        } else if (registerId == 6) {
-//            stream << "SL";
-//            value = m_stackLevel;
-//            zeroRefValue = 16;
-//        } else if (registerId >= 8) {
-//            // TODO
-//        }
-//
-//        if (value != -1) {
-//            stream << "  =  #";
-//            if (value < zeroRefValue)
-//                stream << "0";
-//            stream << std::hex << value;
-//        }
-//
-//        stream << "\n";
-//    }
-    
+        
     sf::Text text;
     text.setFont(m_defaultFont);
     text.setCharacterSize(characterSize);
-    text.setStyle(sf::Text::Bold);
     text.setFillColor(sf::Color::White);
+    text.setLineSpacing(1.8f * m_screenHeigth / 800.f);
     text.setPosition(20.f, characterSize * 0.3f);
     text.setString(stream.str());
     
@@ -683,28 +898,28 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayDebugInfos() {
     
     std::ostringstream stream;
     
-    stream << "Chip 8" << "\n\n";
+    stream << "\n" << "Chip 8" << "\n\n\n";
     
-    stream << "Config  file:    " << m_configFilename << "\n";
-    stream << "Game    file:    " << m_gameFilename << "\n";
-    stream << "Sound   file:    " << m_soundFilename << "\n";
-    stream << "Font    file:    " << m_fontFilename << "\n";
-    
-    stream << "\n";
-    
-    stream << "fps:   " << (m_isPaused ? m_fps : 1.f / m_displayTimer.getElapsedTime().asSeconds()) << "\n";
+    stream << "Config file: " << m_configFilename << "\n\n";
+    stream << "Game file: " << m_gameFilename << "\n\n";
+    stream << "Sound file: " << m_soundFilename << "\n\n";
+    stream << "Font file: " << m_fontFilename << "\n\n";
     
     stream << "\n";
     
-    stream << "Pause  key:   " << ExtendedInputs::getKeyName(m_controlKeys[16]) << "\n";
-    stream << "Reload key:   " << ExtendedInputs::getKeyName(m_controlKeys[17]) << "\n";
-    stream << "Jump   key:   " << ExtendedInputs::getKeyName(m_controlKeys[18]) << "\n";
+    stream << "fps: " << (m_isPaused ? m_fps : std::round(1.f / m_displayTimer.getElapsedTime().asSeconds())) << "\n";
+    
+    stream << "\n\n";
+    
+    stream << "Pause  : " << ExtendedInputs::getKeyName(m_controlKeys[16]) << "\n";
+    stream << "Reload : " << ExtendedInputs::getKeyName(m_controlKeys[17]) << "\n";
+    stream << "Jump   : " << ExtendedInputs::getKeyName(m_controlKeys[18]) << "\n";
     
     sf::Text text(stream.str(), m_defaultFont);
-    text.setCharacterSize(30); // TODO adaptative text size
-    text.setStyle(sf::Text::Bold);
+    text.setCharacterSize(25); // TODO adaptative text size
+    text.setLineSpacing(1.1f * m_screenHeigth / 800.f);
     text.setFillColor(sf::Color::White);
-    text.setPosition(5.f, 0.f);
+    text.setPosition(20.f, 0.f);
     
     texture->draw(text);
     
@@ -712,8 +927,12 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayDebugInfos() {
     return texture;
 }
 
+std::uint16_t Chip8::getOpcodeAt(std::uint16_t adress) {
+    return ((m_memory[adress] << 8) + m_memory[adress + 1]);
+}
+
 std::uint16_t Chip8::getCurrentOpcode() {
-    return ((m_memory[m_programCounter] << 8) + m_memory[m_programCounter + 1]);
+    return getOpcodeAt(m_programCounter);
 }
 
 std::uint8_t Chip8::getActionFromOpcode(std::uint16_t opcode) {

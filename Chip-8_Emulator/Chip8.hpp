@@ -16,6 +16,7 @@
 # include <memory>
 # include <fstream>
 # include <limits>
+# include <cmath>
 
 # include <stdlib.h>
 # include <time.h>
@@ -63,6 +64,7 @@ private:
     std::unique_ptr<sf::RenderTexture> displayMemory();
     std::unique_ptr<sf::RenderTexture> displayDebugInfos();
     
+    std::uint16_t getOpcodeAt(std::uint16_t adress);
     std::uint16_t getCurrentOpcode();
     std::uint8_t getActionFromOpcode(std::uint16_t opcode);
     void computeAction(std::uint8_t actionId, std::uint16_t opcode);
@@ -116,8 +118,10 @@ private:
     std::uint16_t m_opcodesDisplayBegining;
     
     struct OpcodeIdentifier {
+        std::string opcode;
         std::uint16_t mask;
         std::uint16_t identifier;
+        std::string mnemonic;
     };
     std::array<OpcodeIdentifier, NB_OPCODES_AVAILABLES> m_opcodeIdentifiers;
     
