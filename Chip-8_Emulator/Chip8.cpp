@@ -562,42 +562,47 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
     texture->create(subViewWidth, subViewHeight);
     texture->clear(sf::Color(38, 52, 82));
     
-    const float characterSize {subViewHeight / 16.f};
+    const float characterSize {subViewHeight / 12.f};
     
     std::stringstream stream;
     
-    for (int registerId = 0; registerId < 16; ++registerId) {
+    for (int registerId = 0; registerId < 11; ++registerId) {
         stream << "V" << std::hex << registerId << "  =  #";
         if (m_registers[registerId] < 16) {
             stream << "0";
         }
-        stream << static_cast<int>(m_registers[registerId]) << "\t\t\t\t\t\t\t\t\t\t\t\t";
+        stream << static_cast<int>(m_registers[registerId]) << "\t\t\t\t\t\t";
         
         int value = -1;
         int zeroRefValue = -1;
         
-        if (registerId == 0) {
+        if (registerId < 4) {
+            stream << "V" << std::hex << registerId + 11 << "  =  #";
+            if (m_registers[registerId + 11] < 16) {
+                stream << "0";
+            }
+            stream << static_cast<int>(m_registers[registerId]) << "\n";
+            continue;
+        } else if (registerId == 5) {
             stream << "GC";
             value = m_gameCounter;
             zeroRefValue = 16;
-        } else if (registerId == 1) {
+        } else if (registerId == 6) {
             stream << "SC";
             value = m_soundCounter;
             zeroRefValue = 16;
-        } else if (registerId == 3) {
+        } else if (registerId == 8) {
             stream << "I ";
             value = m_registerAdress;
             zeroRefValue = 4096;
-        } else if (registerId == 5) {
+        } else if (registerId == 9) {
             stream << "PC";
             value = m_programCounter;
             zeroRefValue = 4096;
-        } else if (registerId == 6) {
+        } else if (registerId == 10) {
             stream << "SL";
             value = m_stackLevel;
             zeroRefValue = 16;
-        } else if (registerId >= 8) {
-            // TODO
         }
         
         if (value != -1) {
@@ -610,12 +615,56 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
         stream << "\n";
     }
     
+//    for (int registerId = 0; registerId < 16; ++registerId) {
+//        stream << "V" << std::hex << registerId << "  =  #";
+//        if (m_registers[registerId] < 16) {
+//            stream << "0";
+//        }
+//        stream << static_cast<int>(m_registers[registerId]) << "\t\t\t\t\t\t\t\t\t\t\t\t";
+//
+//        int value = -1;
+//        int zeroRefValue = -1;
+//
+//        if (registerId == 0) {
+//            stream << "GC";
+//            value = m_gameCounter;
+//            zeroRefValue = 16;
+//        } else if (registerId == 1) {
+//            stream << "SC";
+//            value = m_soundCounter;
+//            zeroRefValue = 16;
+//        } else if (registerId == 3) {
+//            stream << "I ";
+//            value = m_registerAdress;
+//            zeroRefValue = 4096;
+//        } else if (registerId == 5) {
+//            stream << "PC";
+//            value = m_programCounter;
+//            zeroRefValue = 4096;
+//        } else if (registerId == 6) {
+//            stream << "SL";
+//            value = m_stackLevel;
+//            zeroRefValue = 16;
+//        } else if (registerId >= 8) {
+//            // TODO
+//        }
+//
+//        if (value != -1) {
+//            stream << "  =  #";
+//            if (value < zeroRefValue)
+//                stream << "0";
+//            stream << std::hex << value;
+//        }
+//
+//        stream << "\n";
+//    }
+    
     sf::Text text;
     text.setFont(m_defaultFont);
     text.setCharacterSize(characterSize);
     text.setStyle(sf::Text::Bold);
     text.setFillColor(sf::Color::White);
-    text.setPosition(20.f, 0.f);
+    text.setPosition(20.f, characterSize * 0.3f);
     text.setString(stream.str());
     
     texture->draw(text);
