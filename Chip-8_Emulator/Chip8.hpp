@@ -115,6 +115,10 @@ private:
     bool m_isPaused = false;
     bool m_doSingleJump = false;
     
+    bool m_showDebugInfos = false;
+    bool m_showOpcodes = false;
+    bool m_showMemory = false;
+    
     std::uint16_t m_opcodesDisplayBegining;
     
     struct OpcodeIdentifier {

@@ -28,9 +28,9 @@ key_F: P
 
 # Emulation
 
-update_frequency: 10000
+update_frequency: 250
 
-framerate: 6000
+framerate: 60
 
 
 # resources
@@ -44,13 +44,11 @@ font: Resources/Fonts/EmulatorFont/Emulator.ttf
 
 # Debug
 
-show_fps: true
+show_infos: true
 
-show_ips: true
+show_opcodes: true
 
-show_opcodes: false
-
-show_memory: false
+show_memory: true
 
 pause_key: Enter
 

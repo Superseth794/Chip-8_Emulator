@@ -64,8 +64,8 @@ void Chip8::init(std::string const& configFilename) {
     loadOpcodes();
     loadActions();
     
-    m_windowWidth = m_screenWidth * 1.4f;
-    m_windowHeight = m_screenHeigth * 1.7f;
+    m_windowWidth = m_screenWidth * (m_showOpcodes || m_showMemory ? 1.4f : 1.f);
+    m_windowHeight = m_screenHeigth * (m_showDebugInfos || m_showMemory ? 1.7f : 1.f);
     
     m_programCounter = m_memoryBegin;
     m_stackLevel = 0;
@@ -96,8 +96,12 @@ void Chip8::loadConfig(std::string const& configFilename) {
     m_fps = parser.get<decltype(m_fps)>("framerate").value_or(m_fps);
     
     m_gameFilename = parser.get<decltype(m_gameFilename)>("file").value_or(m_gameFilename);
-    m_soundFilename  = parser.get<decltype(m_soundFilename)>("sound").value_or(m_soundFilename);
-    m_fontFilename  = parser.get<decltype(m_fontFilename)>("font").value_or(m_fontFilename);
+    m_soundFilename = parser.get<decltype(m_soundFilename)>("sound").value_or(m_soundFilename);
+    m_fontFilename = parser.get<decltype(m_fontFilename)>("font").value_or(m_fontFilename);
+    
+    m_showDebugInfos = parser.get<decltype(m_showDebugInfos)>("show_infos").value_or(m_showDebugInfos);
+    m_showOpcodes = parser.get<decltype(m_showOpcodes)>("show_opcodes").value_or(m_showOpcodes);
+    m_showMemory = parser.get<decltype(m_showMemory)>("show_memory").value_or(m_showMemory);
     
     m_memorySize = parser.get<decltype(m_memorySize)>("memory_size").value_or(m_memorySize);
     m_memoryBegin = parser.get<decltype(m_memoryBegin)>("memory_start").value_or(m_memoryBegin);
@@ -635,23 +639,52 @@ std::unique_ptr<sf::RenderTexture> Chip8::display() {
     screenSprite.setPosition(0.f, 0.f);
     texture->draw(screenSprite);
     
-    sf::Sprite opcodesSprite {};
-    auto opcodesTexture {displayOpcodes()};
-    opcodesSprite.setTexture(opcodesTexture->getTexture());
-    opcodesSprite.setPosition(m_screenWidth, 0.f);
-    texture->draw(opcodesSprite);
+    if (m_showOpcodes) {
+        sf::Sprite opcodesSprite {};
+        auto opcodesTexture {displayOpcodes()};
+        opcodesSprite.setTexture(opcodesTexture->getTexture());
+        opcodesSprite.setPosition(m_screenWidth, 0.f);
+        texture->draw(opcodesSprite);
+    }
     
-    sf::Sprite memorySprite {};
-    auto memoryTexture {displayMemory()};
-    memorySprite.setTexture(memoryTexture->getTexture());
-    memorySprite.setPosition(m_screenWidth, m_screenHeigth);
-    texture->draw(memorySprite);
+    if (m_showDebugInfos) {
+        sf::Sprite debugSprite {};
+        auto debugTexture {displayDebugInfos()};
+        debugSprite.setTexture(debugTexture->getTexture());
+        debugSprite.setPosition(0.f, m_screenHeigth);
+        texture->draw(debugSprite);
+    }
     
-    sf::Sprite debugSprite {};
-    auto debugTexture {displayDebugInfos()};
-    debugSprite.setTexture(debugTexture->getTexture());
-    debugSprite.setPosition(0.f, m_screenHeigth);
-    texture->draw(debugSprite);
+    if (m_showMemory) {
+        sf::Sprite memorySprite {};
+        auto memoryTexture {displayMemory()};
+        memorySprite.setTexture(memoryTexture->getTexture());
+        memorySprite.setPosition(m_screenWidth, m_screenHeigth);
+        texture->draw(memorySprite);
+        
+        if (!m_showOpcodes) {
+            sf::RenderTexture opcodesTexture;
+            opcodesTexture.create(m_screenWidth * 0.4f, m_screenHeigth);
+            opcodesTexture.clear(sf::Color(61, 75, 105));
+            opcodesTexture.display();
+            
+            sf::Sprite opcodesSprite {};
+            opcodesSprite.setTexture(opcodesTexture.getTexture());
+            opcodesSprite.setPosition(m_screenWidth, 0.f);
+            texture->draw(opcodesSprite);
+        }
+        if (!m_showDebugInfos) {
+            sf::RenderTexture debugTexture;
+            debugTexture.create(m_screenWidth, m_screenHeigth * 0.7f);
+            debugTexture.clear(sf::Color(59, 81, 128));
+            debugTexture.display();
+            
+            sf::Sprite debugSprite {};
+            debugSprite.setTexture(debugTexture.getTexture());
+            debugSprite.setPosition(0.f, m_screenHeigth);
+            texture->draw(debugSprite);
+        }
+    }
     
     texture->display();
     
