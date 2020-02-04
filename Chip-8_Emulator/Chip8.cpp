@@ -390,42 +390,6 @@ void Chip8::loadOpcodes() {
         0xF065,
         "LD VX, [I]"
     };
-    
-//    m_opcodeIdentifiers[0].mask = 0x0000; m_opcodeIdentifiers[0].identifier = 0x0FFF;
-//    m_opcodeIdentifiers[1].mask = 0xFFFF; m_opcodeIdentifiers[1].identifier = 0x00E0;
-//    m_opcodeIdentifiers[2].mask = 0xFFFF; m_opcodeIdentifiers[2].identifier = 0x00EE;
-//    m_opcodeIdentifiers[3].mask = 0xF000; m_opcodeIdentifiers[3].identifier = 0x1000;
-//    m_opcodeIdentifiers[4].mask = 0xF000; m_opcodeIdentifiers[4].identifier = 0x2000;
-//    m_opcodeIdentifiers[5].mask = 0xF000; m_opcodeIdentifiers[5].identifier = 0x3000;
-//    m_opcodeIdentifiers[6].mask = 0xF000; m_opcodeIdentifiers[6].identifier = 0x4000;
-//    m_opcodeIdentifiers[7].mask = 0xF00F; m_opcodeIdentifiers[7].identifier = 0x5000;
-//    m_opcodeIdentifiers[8].mask = 0xF000; m_opcodeIdentifiers[8].identifier = 0x6000;
-//    m_opcodeIdentifiers[9].mask = 0xF000; m_opcodeIdentifiers[9].identifier = 0x7000;
-//    m_opcodeIdentifiers[10].mask = 0xF00F; m_opcodeIdentifiers[10].identifier = 0x8000;
-//    m_opcodeIdentifiers[11].mask = 0xF00F; m_opcodeIdentifiers[11].identifier = 0x8001;
-//    m_opcodeIdentifiers[12].mask = 0xF00F; m_opcodeIdentifiers[12].identifier = 0x8002;
-//    m_opcodeIdentifiers[13].mask = 0xF00F; m_opcodeIdentifiers[13].identifier = 0x8003;
-//    m_opcodeIdentifiers[14].mask = 0xF00F; m_opcodeIdentifiers[14].identifier = 0x8004;
-//    m_opcodeIdentifiers[15].mask = 0xF00F; m_opcodeIdentifiers[15].identifier = 0x8005;
-//    m_opcodeIdentifiers[16].mask = 0xF00F; m_opcodeIdentifiers[16].identifier = 0x8006;
-//    m_opcodeIdentifiers[17].mask = 0xF00F; m_opcodeIdentifiers[17].identifier = 0x8007;
-//    m_opcodeIdentifiers[18].mask = 0xF00F; m_opcodeIdentifiers[18].identifier = 0x800E;
-//    m_opcodeIdentifiers[19].mask = 0xF00F; m_opcodeIdentifiers[19].identifier = 0x9000;
-//    m_opcodeIdentifiers[20].mask = 0xF000; m_opcodeIdentifiers[20].identifier = 0xA000;
-//    m_opcodeIdentifiers[21].mask = 0xF000; m_opcodeIdentifiers[21].identifier = 0xB000;
-//    m_opcodeIdentifiers[22].mask = 0xF000; m_opcodeIdentifiers[22].identifier = 0xC000;
-//    m_opcodeIdentifiers[23].mask = 0xF000; m_opcodeIdentifiers[23].identifier = 0xD000;
-//    m_opcodeIdentifiers[24].mask = 0xF0FF; m_opcodeIdentifiers[24].identifier = 0xE09E;
-//    m_opcodeIdentifiers[25].mask = 0xF0FF; m_opcodeIdentifiers[25].identifier = 0xE0A1;
-//    m_opcodeIdentifiers[26].mask = 0xF0FF; m_opcodeIdentifiers[26].identifier = 0xF007;
-//    m_opcodeIdentifiers[27].mask = 0xF0FF; m_opcodeIdentifiers[27].identifier = 0xF00A;
-//    m_opcodeIdentifiers[28].mask = 0xF0FF; m_opcodeIdentifiers[28].identifier = 0xF015;
-//    m_opcodeIdentifiers[29].mask = 0xF0FF; m_opcodeIdentifiers[29].identifier = 0xF018;
-//    m_opcodeIdentifiers[30].mask = 0xF0FF; m_opcodeIdentifiers[30].identifier = 0xF01E;
-//    m_opcodeIdentifiers[31].mask = 0xF0FF; m_opcodeIdentifiers[31].identifier = 0xF029;
-//    m_opcodeIdentifiers[32].mask = 0xF0FF; m_opcodeIdentifiers[32].identifier = 0xF033;
-//    m_opcodeIdentifiers[33].mask = 0xF0FF; m_opcodeIdentifiers[33].identifier = 0xF055;
-//    m_opcodeIdentifiers[34].mask = 0xF0FF; m_opcodeIdentifiers[34].identifier = 0xF065;
 }
 
 void Chip8::loadActions() {
@@ -634,7 +598,7 @@ void Chip8::handleKey(sf::Keyboard::Key key, bool keyPressed) {
         m_isPaused = !m_isPaused;
     } else if (key == m_controlKeys[17] && keyPressed) { // Handles reload
         init(m_configFilename);
-    } else if (key == m_controlKeys[18]) {
+    } else if (key == m_controlKeys[18]) { // Handles step-by-step execution
         if (keyPressed && m_isPaused)
             m_doSingleJump = true;
     }
@@ -811,6 +775,7 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayOpcodes() {
     
     texture->display();
     return texture;
+    
 }
 
 std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
@@ -821,7 +786,7 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
     texture->create(subViewWidth, subViewHeight);
     texture->clear(sf::Color(38, 52, 82));
     
-    const float characterSize {subViewHeight / 20.f};
+    const float characterSize = 28.f;
     
     std::stringstream stream;
     
@@ -878,9 +843,9 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayMemory() {
     text.setFont(m_defaultFont);
     text.setCharacterSize(characterSize);
     text.setFillColor(sf::Color::White);
-    text.setLineSpacing(1.8f * m_screenHeigth / 800.f);
-    text.setPosition(20.f, characterSize * 0.3f);
+    text.setPosition(10.f, 7.f);
     text.setString(stream.str());
+    text.setLineSpacing((1.8f - (m_screenHeigth <= 700 ? 0.1f : 0.f)) * m_screenHeigth / 800.f);
     
     texture->draw(text);
     
@@ -916,7 +881,7 @@ std::unique_ptr<sf::RenderTexture> Chip8::displayDebugInfos() {
     stream << "Jump   : " << ExtendedInputs::getKeyName(m_controlKeys[18]) << "\n";
     
     sf::Text text(stream.str(), m_defaultFont);
-    text.setCharacterSize(25); // TODO adaptative text size
+    text.setCharacterSize(25);
     text.setLineSpacing(1.1f * m_screenHeigth / 800.f);
     text.setFillColor(sf::Color::White);
     text.setPosition(20.f, 0.f);
