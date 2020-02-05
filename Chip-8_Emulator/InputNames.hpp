@@ -14,9 +14,16 @@
 
 namespace chp {
 
+/**
+ \brief Class to extend user inputs
+ */
 class ExtendedInputs {
 public:
-    
+    /**
+     \brief Gets name of key given
+     \param key Key to get the name
+     \return The name of the key
+     */
     static std::string getKeyName(sf::Keyboard::Key const& key) {
         for (auto it {keys.begin()}; it != keys.end(); ++it) {
             if (it->second == key)
@@ -25,6 +32,11 @@ public:
         return "Unknown";
     }
     
+    /**
+     \brief Gets the key with the given name
+     \param name Name of the key
+     \return The key specified
+     */
     static sf::Keyboard::Key getAssociatedKey(std::string const& name) {
         if (keys.contains(name))
             return keys.at(name);
