@@ -26,7 +26,6 @@ void Chip8::launch(std::string const& configFilename) {
                 gameWindow.close();
             } else if (event.type == event.KeyPressed) {
                 handleKey(event.key.code, true);
-                std::cout << ExtendedInputs::getKeyName(event.key.code) << std::endl;
             } else if (event.type == event.KeyReleased) {
                 handleKey(event.key.code, false);
             }
