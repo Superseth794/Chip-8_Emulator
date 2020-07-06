@@ -6,3 +6,4 @@
 # ignores exec files
 */DEBUG
 */DEBUG/*
+premake5
