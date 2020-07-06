@@ -65,5 +65,5 @@ Finnaly, here are somme infos about the configuration values if you want to modi
   - `sound` is the sound filename that will be used by the emulator
   - `font` is the font filename that will be used by the emulator
   - `show_infos`, `show_opcodes` and `show_memory` are used to control which debug parts of the emulator are displayed
-**All filenames are relative to the executable file**
+  - **All filenames are relative to the executable file**
  
