@@ -3,15 +3,29 @@ workspace "Chip-8"
 
 project "Chip-8"
    kind "ConsoleApp"
+
    language "C++"
-   targetdir "bin/%{cfg.buildcfg}"
+   cppdialect("C++17")
 
-   files { "**.h", "**.c++" }
+   targetdir "Executable/%{cfg.buildcfg}"
 
-   filter "configurations:Debug"
-      defines { "DEBUG" }
-      symbols "On"
+   files {
+         "Chip-8_Emulator/**.hpp",
+         "Chip-8_Emulator/**.cpp",
+         "Chip-8_Emulator/**.h"
+      }
 
-   filter "configurations:Release"
-      defines { "NDEBUG" }
-      optimize "On"
+      includedirs {
+      "SFML/include"
+   }
+
+   links {
+      "sfml-graphics",
+      "sfml-window",
+      "sfml-system",
+      "sfml-audio"
+   }
+
+   libdirs {
+      "SFML/lib"
+   }

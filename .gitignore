@@ -7,3 +7,6 @@
 */DEBUG
 */DEBUG/*
 premake5
+
+# ignores Platform-dependent files
+SFML/*

@@ -11,7 +11,7 @@
 
 int main(int argc, char ** argv) {
     
-    std::string configFilename = "Config.txt";
+    std::string configFilename = "../Config.txt";
     
     if (argc > 1)
         configFilename = argv[1];

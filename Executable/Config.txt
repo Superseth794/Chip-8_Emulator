@@ -35,11 +35,11 @@ framerate: 60
 
 # resources
 
-file: Games/Games/AIRPLANE.ch8
+file: ../Games/Games/AIRPLANE.ch8
 
-sound: Resources/Sounds/sfx_sounds_high2.wav
+sound: ../Resources/Sounds/sfx_sounds_high2.wav
 
-font: Resources/Fonts/EmulatorFont/Emulator.ttf
+font: ../Resources/Fonts/EmulatorFont/Emulator.ttf
 
 
 # Debug
